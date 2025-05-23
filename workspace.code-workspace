@@ -1,0 +1,8 @@
+{
+  "folders": [
+    { "path": "fastapi-backend" },
+    { "path": "lambdas" },
+    { "path": "infrastructure" },
+    { "path": "shared" },
+  ]
+}
