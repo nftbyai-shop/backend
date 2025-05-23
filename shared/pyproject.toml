@@ -1,0 +1,13 @@
+[project]
+name = "shared"
+version = "0.1.0"
+description = "Shared module"
+readme = "README.md"
+authors = [{ name = "DanilKuprin1", email = "danilkuprinca@gmail.com" }]
+requires-python = ">=3.12"
+dependencies = ["sqlalchemy>=2.0.41"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
