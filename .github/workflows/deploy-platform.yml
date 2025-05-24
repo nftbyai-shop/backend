@@ -11,7 +11,7 @@ permissions:
   contents: read    # Required by actions/checkout
 
 jobs:
-  AssumeRoleAndCallIdentity:
+  ApplyTerraformResources:
       runs-on: ubuntu-latest
       steps:
         - name: Git clone the repository
