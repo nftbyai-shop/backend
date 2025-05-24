@@ -1,0 +1,38 @@
+name: Deploy Platform
+
+on: 
+  workflow_dispatch:
+
+env:
+  AWS_REGION : us-east-1 #Change to reflect your Region
+
+permissions:
+  id-token: write   # Required to get the OIDC token
+  contents: read    # Required by actions/checkout
+
+jobs:
+  AssumeRoleAndCallIdentity:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Git clone the repository
+          uses: actions/checkout@v3
+        - name: configure aws credentials
+          uses: aws-actions/configure-aws-credentials@v1.7.0
+          with:
+            role-to-assume: arn:aws:iam::111111111111:role/terraform-bootstrap-role #change to reflect your IAM role’s ARN
+            role-session-name: GitHub_to_AWS_via_FederatedOIDC
+            aws-region: ${{ env.AWS_REGION }}
+        # Hello from AWS: WhoAmI
+        - name: Sts GetCallerIdentity
+          run: |
+            aws sts get-caller-identity
+        - name: Set up Terraform
+          uses: hashicorp/setup-terraform@v3
+          with:
+            terraform_version: 1.12
+        - name: Terraform init/apply
+          run: | 
+            cd infrastructure/staging/platform
+            terraform init
+            terraform apply -auto-approve
+      
