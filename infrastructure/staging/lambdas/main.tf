@@ -31,7 +31,7 @@ module "lambda_rds_user_setup" {
   runtime       = "python3.12"
   publish       = true
 
-  source_path = "lambdas/produce_nft"
+  source_path = "../../../lambdas/produce_nft"
 
   store_on_s3 = true
   s3_bucket   = "lambdas-389239"
