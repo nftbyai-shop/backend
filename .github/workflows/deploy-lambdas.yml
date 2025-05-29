@@ -1,0 +1,34 @@
+name: Deploy Lambdas
+
+on: 
+  workflow_dispatch:
+
+env:
+  AWS_REGION : us-east-1 
+
+permissions:
+  id-token: write   
+  contents: read    
+
+jobs:
+  deploy-lambdas:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Git clone the repository
+          uses: actions/checkout@v3
+        - name: configure aws credentials
+          uses: aws-actions/configure-aws-credentials@v1.7.0
+          with:
+            role-to-assume: arn:aws:iam::111111111111:role/terraform-bootstrap-role
+            role-session-name: GitHub_to_AWS_via_FederatedOIDC
+            aws-region: ${{ env.AWS_REGION }}
+        - name: Set up Terraform
+          uses: hashicorp/setup-terraform@v3
+          with:
+            terraform_version: 1.12
+        - name: Terraform init/apply
+          run: | 
+            cd infrastructure/staging/lambdas
+            terraform init
+            terraform apply -auto-approve
+      
