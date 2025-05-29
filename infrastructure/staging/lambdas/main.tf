@@ -48,7 +48,7 @@ module "lambda_rds_user_setup" {
   }
   vpc_subnet_ids     = data.terraform_remote_state.platform_deployment_state.outputs.private_subnets
   attach_policy_json = true
-  policy_json = {
+  policy_json = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
       {
@@ -70,6 +70,6 @@ module "lambda_rds_user_setup" {
         "Resource" : "*"
       }
     ]
-  }
+  })
 }
 
