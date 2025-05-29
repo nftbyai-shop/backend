@@ -25,13 +25,13 @@ data "terraform_remote_state" "platform_deployment_state" {
 module "lambda_for_adding_rds_users" {
   source = "terraform-aws-modules/lambda/aws"
 
-  function_name = "produce_nft"
-  description   = "Function that produces nft and stores it in rds"
-  handler       = "produce_nft.lambda_handler"
+  function_name = "setup_rds_users"
+  description   = "lambda that sets up rds users and their permissions"
+  handler       = "setup_rds_users.lambda_handler"
   runtime       = "python3.12"
   publish       = true
 
-  source_path = "../../../lambdas/produce_nft"
+  source_path = "../../../lambdas/setup_rds_users"
 
   store_on_s3 = true
   s3_bucket   = "lambdas-389239"
