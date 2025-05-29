@@ -13,16 +13,14 @@ terraform {
   required_version = ">= 1.2.0"
 }
 
-
 data "terraform_remote_state" "platform_deployment_state" {
   backend = "s3"
   config = {
     bucket = "terraform-backends193093"
-    key    = "staging/deploy-lambdas"
+    key    = "staging/platform"
     region = "us-east-1"
   }
 }
-
 
 module "lambda_rds_user_setup" {
   source = "terraform-aws-modules/lambda/aws"
@@ -33,7 +31,7 @@ module "lambda_rds_user_setup" {
   runtime       = "python3.12"
   publish       = true
 
-  source_path = "../../../lambdas/produce_nft.py"
+  source_path = "lambdas/produce_nft.py"
 
   store_on_s3 = true
   s3_bucket   = "lambdas-389239"
@@ -48,6 +46,7 @@ module "lambda_rds_user_setup" {
   }
   vpc_subnet_ids     = data.terraform_remote_state.platform_deployment_state.outputs.private_subnets
   attach_policy_json = true
+
   policy_json = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
