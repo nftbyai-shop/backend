@@ -1,8 +1,9 @@
 name: Deploy Lambdas
 
 on: 
-  workflow_dispatch:
-
+  push:
+      paths:
+      - 'lambdas/**'
 env:
   AWS_REGION : us-east-1 
 
