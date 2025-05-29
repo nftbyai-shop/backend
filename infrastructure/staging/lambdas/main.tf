@@ -39,16 +39,16 @@ module "lambda_rds_user_setup" {
   s3_bucket   = "lambdas-389239"
 
   environment_variables = {
-    DB_USER              = data.terraform_remote_state.platform_deployment_state.module.db.db_instance_username
-    DB_HOST              = data.terraform_remote_state.platform_deployment_state.module.db.db_instance_address
+    DB_USER              = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_username
+    DB_HOST              = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_address
     DB_NAME              = "nftdb"
-    DB_PASS_ARN          = data.terraform_remote_state.platform_deployment_state.module.db.db_instance_master_user_secret_arn
+    DB_PASS_ARN          = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_master_user_secret_arn
     MIGRATION_USERNAME   = "MIGRATION_USER"
     APPLICATION_USERNAME = "APPLICATION_USER"
   }
-  vpc_subnet_ids     = terraform_remote_state.platform_deployment_state.module.vpc.private_subnets
+  vpc_subnet_ids     = data.terraform_remote_state.platform_deployment_state.outputs.private_subnets
   attach_policy_json = true
-  policy_json = jsondecode({
+  policy_json = {
     "Version" : "2012-10-17",
     "Statement" : [
       {
@@ -57,7 +57,7 @@ module "lambda_rds_user_setup" {
         "Action" : [
           "secretsmanager:GetSecretValue"
         ],
-        "Resource" : "arn:aws:secretsmanager:<REGION>:<ACCOUNT_ID>:secret:<SECRET_NAME>*"
+        "Resource" : "arn:aws:secretsmanager:us-east-1:111111111111:secret:rds*"
       },
       {
         "Sid" : "AllowLogs",
@@ -70,7 +70,6 @@ module "lambda_rds_user_setup" {
         "Resource" : "*"
       }
     ]
-    }
-  )
+  }
 }
 
