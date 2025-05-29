@@ -29,5 +29,5 @@ jobs:
         - name: Terraform init/apply
           run: | 
             terraform -chdir=infrastructure/staging/lambdas/ init
-            terraform -chdir=infrastructure/staging/lambdas/ -auto-approve apply
+            terraform -chdir=infrastructure/staging/lambdas/ apply -auto-approve
       
