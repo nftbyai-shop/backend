@@ -6,7 +6,7 @@ import os
 import sys
 import time
 import uuid
-from typing import Any, Literal
+from typing import Any
 
 import boto3
 import json_logging
@@ -32,7 +32,9 @@ DB_PASS_SSM_PATH: str = os.environ["DB_PASS_SSM_PATH"]
 db_pass: str = ssm.get_parameter(Name=DB_PASS_SSM_PATH, WithDecryption=True)
 DB_HOST: str = os.environ["DB_HOST"]
 DB_NAME: str = os.environ["DB_NAME"]
-engine: Engine = create_engine(f"postgresql+psycopg://{DB_USER}:{db_pass}@{DB_HOST}/{DB_NAME}")
+engine: Engine = create_engine(
+    f"postgresql+psycopg://{DB_USER}:{db_pass}@{DB_HOST}/{DB_NAME}"
+)
 
 CROSSMINT_API_KEY_SSM_PATH: str = os.environ["CROSSMINT_API_KEY_SSM_PATH"]
 CROSSMINT_API_KEY: str = ssm.get_parameter(

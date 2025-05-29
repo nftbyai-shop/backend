@@ -1,0 +1,9 @@
+requests
+json_logging
+python-dotenv
+OpenAI
+SQLAlchemy
+psycopg
+boto3
+tenacity
+../../shared
