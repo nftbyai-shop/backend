@@ -9,7 +9,7 @@ def lambda_handler(event, context):
     DB_HOST = os.environ["DB_HOST"]
     DB_NAME = os.environ["DB_NAME"]
     PATH_TO_DB_PASSWORD_IN_SECRETS_MANAGER: str = os.environ[
-        "PATH_TO_DB_PASSWORD_IN_SECRETS_MANAGER"
+        "DB_PASS_ARN"
     ]
     secrets_client = boto3.client("secretsmanager")
     DB_PASS = secrets_client.get_secret_value(
