@@ -23,5 +23,16 @@ jobs:
             aws-region: ${{ env.AWS_REGION }}
         - name: Run setup_rds_users lambda
           run: | 
-            aws lambda invoke --function-name generate_nft
-      
+            set -e
+            aws lambda invoke \
+              --function-name generate_nft \
+              --cli-binary-format raw-in-base64-out \
+              --log-type Tail \
+              --payload '{}' \
+              /tmp/response.json > /tmp/invoke.log
+            
+            # Show logs
+            jq -r .LogResult /tmp/response.json | base64 -d
+          
+            # Exit if Lambda errored
+            jq -e '.FunctionError == null' /tmp/response.json > /dev/null || exit 1
