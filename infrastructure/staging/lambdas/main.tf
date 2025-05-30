@@ -51,7 +51,7 @@ module "lambda_for_adding_rds_users" {
     APPLICATION_USERNAME = local.application_username
   }
   vpc_security_group_ids = [data.terraform_remote_state.platform_deployment_state.outputs.default_security_group_id]
-  vpc_subnet_ids         = data.terraform_remote_state.platform_deployment_state.outputs.private_subnets
+  vpc_subnet_ids         = data.terraform_remote_state.platform_deployment_state.outputs.public_subnets
   attach_network_policy  = true
   attach_policy_json     = true
 
@@ -117,7 +117,7 @@ module "lambda_for_generating_nft" {
   }
 
   vpc_security_group_ids = [data.terraform_remote_state.platform_deployment_state.outputs.default_security_group_id]
-  vpc_subnet_ids         = data.terraform_remote_state.platform_deployment_state.outputs.private_subnets
+  vpc_subnet_ids         = data.terraform_remote_state.platform_deployment_state.outputs.public_subnets
   attach_network_policy  = true
 
   attach_policy_json = true
@@ -138,4 +138,3 @@ module "lambda_for_generating_nft" {
     ]
   })
 }
-
