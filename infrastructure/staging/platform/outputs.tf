@@ -18,5 +18,5 @@ output "db_instance_resource_id" {
 }
 
 output "s3_bucket_name_for_nfts" {
-  value = module.s3_bucket_lambdas_389239.s3_bucket_id
+  value = module.s3_bucket_nfts_38029.s3_bucket_id
 }
