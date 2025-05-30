@@ -83,10 +83,21 @@ module "db" {
   subnet_ids             = [module.vpc.private_subnets[0], module.vpc.private_subnets[1]]
 }
 
-module "s3_bucket" {
+module "s3_bucket_lambdas_389239" {
   source                   = "terraform-aws-modules/s3-bucket/aws"
   bucket                   = "lambdas-389239"
   force_destroy            = true
+  request_payer            = "BucketOwner"
+  control_object_ownership = true
+  object_ownership         = "BucketOwnerEnforced"
+  restrict_public_buckets  = true
+}
+
+
+module "s3_bucket_nfts_38029" {
+  source                   = "terraform-aws-modules/s3-bucket/aws"
+  bucket                   = "nfts-38029"
+  force_destroy            = false
   request_payer            = "BucketOwner"
   control_object_ownership = true
   object_ownership         = "BucketOwnerEnforced"
