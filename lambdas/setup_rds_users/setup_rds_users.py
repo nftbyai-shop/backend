@@ -11,7 +11,11 @@ def lambda_handler(event, context):
     PATH_TO_DB_PASSWORD_IN_SECRETS_MANAGER: str = os.environ[
         "DB_PASS_ARN"
     ]
-    secrets_client = boto3.client("secretsmanager")
+    secrets_client = boto3.client("secretsmanager", config=boto3.session.Config(
+        connect_timeout=3,  # seconds
+        read_timeout=5,
+        retries = { "max_attempts": 2 }
+    ))
     DB_PASS = secrets_client.get_secret_value(
         SecretId=PATH_TO_DB_PASSWORD_IN_SECRETS_MANAGER
     )["SecretString"]
@@ -20,7 +24,7 @@ def lambda_handler(event, context):
     APPLICATION_USERNAME = os.environ["APPLICATION_USERNAME"]
 
     engine: Engine = create_engine(
-        f"postgresql+psycopg://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
+        f"postgresql+psycopg://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}" + "?connect_timeout=5"  
     )
 
     with engine.begin() as conn:
