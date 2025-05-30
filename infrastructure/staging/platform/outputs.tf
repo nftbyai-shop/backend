@@ -10,7 +10,6 @@ output "db_instance_master_user_secret_arn" {
 output "db_instance_resource_id" {
   value = module.db.db_instance_resource_id
 }
-
 output "s3_bucket_name_for_nfts" {
   value = module.s3_bucket_nfts_38029.s3_bucket_id
 }
@@ -43,20 +42,12 @@ output "private_subnets" {
   value = module.vpc.private_subnets
 }
 
-output "private_subnet_ids" {
-  value = module.vpc.private_subnet_ids
-}
-
 output "private_subnet_arns" {
   value = module.vpc.private_subnet_arns
 }
 
 output "public_subnets" {
   value = module.vpc.public_subnets
-}
-
-output "public_subnet_ids" {
-  value = module.vpc.public_subnet_ids
 }
 
 output "public_subnet_arns" {
