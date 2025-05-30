@@ -38,6 +38,7 @@ module "lambda_for_adding_rds_users" {
 
   source_path = "../../../lambdas/setup_rds_users"
 
+
   store_on_s3 = true
   s3_bucket   = "lambdas-389239"
 
@@ -82,12 +83,12 @@ module "lambda_for_generating_nft" {
   runtime       = "python3.12"
   publish       = true
 
-
-
   source_path = {
     path             = "../../../lambdas/produce_nft"
-    commands         = ["cd ../../../lambdas/produce_nft"]
     pip_requirements = "requirements.txt"
+    commands = [
+      ":zip . ."
+    ]
   }
 
   store_on_s3 = true
