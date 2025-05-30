@@ -50,8 +50,10 @@ module "lambda_for_adding_rds_users" {
     MIGRATION_USERNAME   = local.migration-script-service-rds-username
     APPLICATION_USERNAME = local.application_username
   }
-  vpc_subnet_ids     = data.terraform_remote_state.platform_deployment_state.outputs.private_subnets
-  attach_policy_json = true
+  vpc_security_group_ids = [data.terraform_remote_state.platform_deployment_state.outputs.default_security_group_id]
+  vpc_subnet_ids         = data.terraform_remote_state.platform_deployment_state.outputs.private_subnets
+  attach_network_policy  = true
+  attach_policy_json     = true
 
   policy_json = jsonencode({
     "Version" : "2012-10-17",
@@ -113,9 +115,12 @@ module "lambda_for_generating_nft" {
     IMAGE_SIZE                 = "1024x1024"
     IMAGE_QUALITY              = "standard"
   }
-  vpc_subnet_ids     = data.terraform_remote_state.platform_deployment_state.outputs.private_subnets
-  attach_policy_json = true
 
+  vpc_security_group_ids = [data.terraform_remote_state.platform_deployment_state.outputs.default_security_group_id]
+  vpc_subnet_ids         = data.terraform_remote_state.platform_deployment_state.outputs.private_subnets
+  attach_network_policy  = true
+
+  attach_policy_json = true
   policy_json = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
