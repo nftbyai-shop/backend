@@ -37,7 +37,7 @@ module "lambda_for_adding_rds_users" {
   publish       = true
 
   source_path = "../../../lambdas/setup_rds_users"
-
+  timeout     = 120
 
   store_on_s3 = true
   s3_bucket   = "lambdas-389239"
@@ -82,6 +82,7 @@ module "lambda_for_generating_nft" {
   handler       = "produce_nft.lambda_handler"
   runtime       = "python3.12"
   publish       = true
+  timeout       = 900
 
   source_path = {
     path             = "../../../lambdas/produce_nft"
