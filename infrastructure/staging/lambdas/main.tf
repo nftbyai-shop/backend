@@ -82,9 +82,12 @@ module "lambda_for_generating_nft" {
   runtime       = "python3.12"
   publish       = true
 
+
+
   source_path = {
-    path     = "../../../lambdas/produce_nft"
-    commands = ["cd ../../../lambdas/produce_nft", "pip install -r requirements.txt -t .", "zip:"]
+    path             = "../../../lambdas/produce_nft"
+    commands         = ["cd ../../../lambdas/produce_nft"]
+    pip_requirements = "requirements.txt"
   }
 
   store_on_s3 = true
