@@ -1,3 +1,4 @@
 SQLAlchemy
 boto3
 tenacity
+psycopg
