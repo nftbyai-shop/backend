@@ -1,4 +1,4 @@
-name: Deploy Lambdas
+name: Create RDS Users
 
 on: 
   workflow_dispatch:
