@@ -54,14 +54,14 @@ resource "aws_default_security_group" "default" {
 module "db" {
   source = "terraform-aws-modules/rds/aws"
 
-  identifier = "demodb"
+  identifier = "nftdb"
 
   engine         = "postgres"
   engine_version = "17.2"
   instance_class = "db.t4g.micro"
   family         = "postgres17"
 
-  db_name                             = "demodb"
+  db_name                             = "nftdb"
   username                            = "root"
   port                                = "5432"
   iam_database_authentication_enabled = true
