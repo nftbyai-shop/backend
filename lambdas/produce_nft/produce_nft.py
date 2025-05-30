@@ -23,25 +23,26 @@ from tenacity import (
     stop_after_attempt,
     wait_random_exponential,
 )
-
+import urllib.parse
 ssm = boto3.client("ssm")
-
 
 DB_USER: str = os.environ["DB_USER"]
 DB_PASS_SSM_PATH: str = os.environ["DB_PASS_SSM_PATH"]
-db_pass: str = ssm.get_parameter(Name=DB_PASS_SSM_PATH, WithDecryption=True)
 DB_HOST: str = os.environ["DB_HOST"]
 DB_NAME: str = os.environ["DB_NAME"]
-engine: Engine = create_engine(
-    f"postgresql+psycopg://{DB_USER}:{db_pass}@{DB_HOST}/{DB_NAME}"
-)
+DB_PORT = 5432
+REGION: str = os.environ["REGION"]
 
+rds = boto3.client('rds', region_name=REGION)
+auth_token = rds.generate_db_auth_token(DB_HOST, DB_PORT, DB_USER)
+engine: Engine = create_engine(
+    f"postgresql+psycopg://{DB_USER}:{urllib.parse.quote_plus(auth_token)}@{DB_HOST}/{DB_NAME}"
+)
 CROSSMINT_API_KEY_SSM_PATH: str = os.environ["CROSSMINT_API_KEY_SSM_PATH"]
 CROSSMINT_API_KEY: str = ssm.get_parameter(
     Name=CROSSMINT_API_KEY_SSM_PATH, WithDecryption=True
 )
 OPENAI_API_KEY_SSM_PATH: str = os.environ["OPENAI_API_KEY_SSM_PATH"]
-
 OPENAI_API_KEY: str = ssm.get_parameter(
     Name=OPENAI_API_KEY_SSM_PATH, WithDecryption=True
 )
