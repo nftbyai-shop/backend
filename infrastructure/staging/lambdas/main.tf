@@ -23,7 +23,7 @@ data "terraform_remote_state" "platform_deployment_state" {
 }
 
 locals {
-  nft-generation-service-rds-username   = "APPLICATION_USER"
+  application_username                  = "APPLICATION_USER"
   migration-script-service-rds-username = "MIGRATION_USER"
 }
 
@@ -46,8 +46,8 @@ module "lambda_for_adding_rds_users" {
     DB_HOST              = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_address
     DB_NAME              = "nftdb"
     DB_PASS_ARN          = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_master_user_secret_arn
-    MIGRATION_USERNAME   = locals.nft-generation-service-rds-username
-    APPLICATION_USERNAME = locals.migration-script-service-rds-username
+    MIGRATION_USERNAME   = local.migration-script-service-rds-username
+    APPLICATION_USERNAME = local.application_username
   }
   vpc_subnet_ids     = data.terraform_remote_state.platform_deployment_state.outputs.private_subnets
   attach_policy_json = true
@@ -88,7 +88,7 @@ module "lambda_for_generating_nft" {
   s3_bucket   = "lambdas-389239"
 
   environment_variables = {
-    DB_USER                    = locals.nft-generation-service-rds-username
+    DB_USER                    = local.application_username
     DB_HOST                    = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_address
     DB_NAME                    = "nftdb"
     DB_PASS_ARN                = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_master_user_secret_arn
@@ -120,7 +120,7 @@ module "lambda_for_generating_nft" {
       {
         "Effect" : "Allow",
         "Action" : "rds-db:connect",
-        "Resource" : "arn:aws:rds-db:us-east-1:111111111111:db-user:${data.terraform_remote_state.platform_deployment_state.outputs.db_instance_resource_id}/${locals.nft-generation-service-rds-username}"
+        "Resource" : "arn:aws:rds-db:us-east-1:111111111111:db-user:${data.terraform_remote_state.platform_deployment_state.outputs.db_instance_resource_id}/${local.application_username}"
       }
     ]
   })
