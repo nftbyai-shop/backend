@@ -17,6 +17,9 @@ provider "aws" {
   region = "us-east-1"
 }
 
+data "aws_availability_zones" "available" {}
+
+
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
@@ -27,10 +30,12 @@ module "vpc" {
   private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
   public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
 
-  tags = {
-    Terraform   = "true"
-    Environment = "dev"
-  }
+  enable_ipv6                                   = true
+  public_subnet_assign_ipv6_address_on_creation = true
+
+  public_subnet_ipv6_prefixes  = [0, 1, 2]
+  private_subnet_ipv6_prefixes = [3, 4, 5]
+
 }
 
 resource "aws_default_security_group" "default" {
