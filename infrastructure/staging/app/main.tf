@@ -104,7 +104,6 @@ module "lambda_for_generating_nft" {
     DB_USER                    = local.application_username
     DB_HOST                    = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_address
     DB_NAME                    = "nftdb"
-    DB_PASS_ARN                = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_master_user_secret_arn
     CROSSMINT_API_KEY_SSM_PATH = "/staging/nft-producer-service/CROSSMINT_API_KEY"
     OPENAI_API_KEY_SSM_PATH    = "/staging/nft-producer-service/OPENAI_API_KEY"
     COLLECTION_ID              = "2f36274e-3463-49c1-9ee4-a01205674540"
