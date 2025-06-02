@@ -1,14 +1,17 @@
 import os
-
+import urllib3
 import boto3
+import logging
+import json
 from sqlalchemy import Engine, create_engine, text
 
 
 def lambda_handler(event, context):
+    resp = urllib3.request("GET", "http://google.com", timeout = 5)
     DB_USER = os.environ["DB_USER"]
     DB_HOST = os.environ["DB_HOST"]
     DB_NAME = os.environ["DB_NAME"]
-    PATH_TO_DB_PASSWORD_IN_SECRETS_MANAGER: str = os.environ[
+    DB_PASS_ARN: str = os.environ[
         "DB_PASS_ARN"
     ]
     secrets_client = boto3.client("secretsmanager", config=boto3.session.Config(
@@ -16,34 +19,26 @@ def lambda_handler(event, context):
         read_timeout=5,
         retries = { "max_attempts": 2 }
     ))
-    DB_PASS = secrets_client.get_secret_value(
-        SecretId=PATH_TO_DB_PASSWORD_IN_SECRETS_MANAGER
+    DB_CREDS = secrets_client.get_secret_value(
+        SecretId=DB_PASS_ARN
     )["SecretString"]
-
-    MIGRATION_USERNAME = os.environ["MIGRATION_USERNAME"]
-    APPLICATION_USERNAME = os.environ["APPLICATION_USERNAME"]
+    DB_PASS = json.loads(DB_CREDS)["password"]
+    
+    APPLICATION_USERNAME = "application_user"
 
     engine: Engine = create_engine(
-        f"postgresql+psycopg://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}" + "?connect_timeout=5"  
+        f"postgresql+pg8000://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"  
     )
 
     with engine.begin() as conn:
-        conn.execute(text(f"CREATE ROLE {MIGRATION_USERNAME} WITH LOGIN"))
-        conn.execute(text(f"GRANT rds_iam TO {MIGRATION_USERNAME}"))
-        conn.execute(
-            text(f"GRANT CONNECT ON DATABASE {DB_NAME} TO {MIGRATION_USERNAME}")
-        )
-        conn.execute(
-            text(f"GRANT USAGE, CREATE ON SCHEMA public TO {MIGRATION_USERNAME}")
-        )
-
-        conn.execute(text(f"CREATE ROLE {APPLICATION_USERNAME} WITH LOGIN"))
+        if event.get("create_users", False):
+            conn.execute(text(f"CREATE ROLE {APPLICATION_USERNAME} WITH LOGIN"))
         conn.execute(text(f"GRANT rds_iam TO {APPLICATION_USERNAME}"))
         conn.execute(
             text(f"GRANT CONNECT ON DATABASE {DB_NAME} TO {APPLICATION_USERNAME}")
         )
         conn.execute(
             text(
-                f"GRANT SELECT, INSERT, UPDATE  ON ALL TABLES IN SCHEMA public TO {APPLICATION_USERNAME}; "
+                f"ALTER DEFAULT PRIVILEGES FOR ROLE {DB_USER} IN SCHEMA public GRANT SELECT, INSERT, UPDATE ON TABLES TO {APPLICATION_USERNAME};"
             )
         )

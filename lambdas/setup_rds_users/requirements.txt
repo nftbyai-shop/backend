@@ -1,4 +1,4 @@
 SQLAlchemy
 boto3
 tenacity
-psycopg[binary,pool]
+pg8000

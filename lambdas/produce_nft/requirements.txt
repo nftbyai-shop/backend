@@ -3,7 +3,7 @@ json_logging
 python-dotenv
 OpenAI
 SQLAlchemy
-psycopg
+pg8000
 boto3
 tenacity
 ../../shared
