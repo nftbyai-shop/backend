@@ -23,7 +23,7 @@ from tenacity import (
     wait_random_exponential,
 )
 import urllib.parse
-ssm = boto3.client("ssm")
+ssm = boto3.client("ssm",config=boto3.session.Config(connect_timeout=10, read_timeout=10,retries = { "max_attempts": 4 }))
 
 DB_USER: str = os.environ["DB_USER"]
 DB_HOST: str = os.environ["DB_HOST"]
