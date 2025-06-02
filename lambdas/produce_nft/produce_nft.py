@@ -23,44 +23,42 @@ from tenacity import (
     wait_random_exponential,
 )
 import urllib.parse
-ssm = boto3.client("ssm",config=boto3.session.Config(connect_timeout=10, read_timeout=10,retries = { "max_attempts": 4 }))
-
-DB_USER: str = os.environ["DB_USER"]
-DB_HOST: str = os.environ["DB_HOST"]
-DB_NAME: str = os.environ["DB_NAME"]
-DB_PORT = 5432
-REGION: str = os.environ["REGION"]
-
-rds = boto3.client('rds', region_name=REGION)
-auth_token = rds.generate_db_auth_token(DB_HOST, DB_PORT, DB_USER)
-engine: Engine = create_engine(
-    f"postgresql+pg8000://{DB_USER}:{urllib.parse.quote_plus(auth_token)}@{DB_HOST}/{DB_NAME}"
-)
-CROSSMINT_API_KEY_SSM_PATH: str = os.environ["CROSSMINT_API_KEY_SSM_PATH"]
-CROSSMINT_API_KEY: str = ssm.get_parameter(
-    Name=CROSSMINT_API_KEY_SSM_PATH, WithDecryption=True
-)
-OPENAI_API_KEY_SSM_PATH: str = os.environ["OPENAI_API_KEY_SSM_PATH"]
-OPENAI_API_KEY: str = ssm.get_parameter(
-    Name=OPENAI_API_KEY_SSM_PATH, WithDecryption=True
-)
-COLLECTION_ID: str = os.environ["COLLECTION_ID"]
-NFT_RECIPIENT: str = os.environ["NFT_RECIPIENT"]
-GPT_MODEL_1: str = os.environ["GPT_MODEL_1"]
-IMAGE_GEN_MODEL: str = os.environ["IMAGE_GEN_MODEL"]
-S3_BUCKET: str = os.environ["S3_BUCKET"]
-LOG_LEVEL: str = os.environ["LOG_LEVEL"]
-IMAGE_SIZE: str = os.environ["IMAGE_SIZE"]
-IMAGE_QUALITY: str = os.environ["IMAGE_QUALITY"]
-
-
-json_logging.init_non_web(enable_json=True)
-logger: logging.Logger = logging.getLogger("nft-producer-service")
-logger.setLevel(LOG_LEVEL)
-logger.addHandler(logging.StreamHandler(sys.stdout))
 
 
 def lambda_handler(event, context):
+    ssm = boto3.client("ssm",config=boto3.session.Config(connect_timeout=10, read_timeout=10,retries = { "max_attempts": 4 }))
+    DB_USER: str = os.environ["DB_USER"]
+    DB_HOST: str = os.environ["DB_HOST"]
+    DB_NAME: str = os.environ["DB_NAME"]
+    DB_PORT = 5432
+    REGION: str = os.environ["REGION"]
+    rds = boto3.client('rds', region_name=REGION)
+    auth_token = rds.generate_db_auth_token(DB_HOST, DB_PORT, DB_USER)
+    engine: Engine = create_engine(
+        f"postgresql+pg8000://{DB_USER}:{urllib.parse.quote_plus(auth_token)}@{DB_HOST}/{DB_NAME}"
+    )
+    CROSSMINT_API_KEY_SSM_PATH: str = os.environ["CROSSMINT_API_KEY_SSM_PATH"]
+    CROSSMINT_API_KEY: str = ssm.get_parameter(
+        Name=CROSSMINT_API_KEY_SSM_PATH, WithDecryption=True
+    )
+    OPENAI_API_KEY_SSM_PATH: str = os.environ["OPENAI_API_KEY_SSM_PATH"]
+    OPENAI_API_KEY: str = ssm.get_parameter(
+        Name=OPENAI_API_KEY_SSM_PATH, WithDecryption=True
+    )
+    COLLECTION_ID: str = os.environ["COLLECTION_ID"]
+    NFT_RECIPIENT: str = os.environ["NFT_RECIPIENT"]
+    GPT_MODEL_1: str = os.environ["GPT_MODEL_1"]
+    IMAGE_GEN_MODEL: str = os.environ["IMAGE_GEN_MODEL"]
+    S3_BUCKET: str = os.environ["S3_BUCKET"]
+    LOG_LEVEL: str = os.environ["LOG_LEVEL"]
+    IMAGE_SIZE: str = os.environ["IMAGE_SIZE"]
+    IMAGE_QUALITY: str = os.environ["IMAGE_QUALITY"]
+
+    json_logging.init_non_web(enable_json=True)
+    logger: logging.Logger = logging.getLogger("nft-producer-service")
+    logger.setLevel(LOG_LEVEL)
+    logger.addHandler(logging.StreamHandler(sys.stdout))
+
     try:
         # Generate idea
         client = OpenAI(api_key=OPENAI_API_KEY)
