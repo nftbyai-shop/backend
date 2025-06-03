@@ -116,14 +116,13 @@ module "lambda_for_generating_nft" {
     IMAGE_SIZE                 = "1024x1024"
     IMAGE_QUALITY              = "standard"
   }
-  layers = ["arn:aws:lambda:us-east-1:177933569100:layer:AWS-Parameters-and-Secrets-Lambda-Extension:17"]
-
-  vpc_security_group_ids      = [data.terraform_remote_state.platform_deployment_state.outputs.default_security_group_id]
-  vpc_subnet_ids              = data.terraform_remote_state.platform_deployment_state.outputs.public_subnets[1]
-  ipv6_allowed_for_dual_stack = true
-  attach_network_policy       = true
-
-  attach_policy_json = true
+  layers                            = ["arn:aws:lambda:us-east-1:177933569100:layer:AWS-Parameters-and-Secrets-Lambda-Extension:17"]
+  vpc_security_group_ids            = [data.terraform_remote_state.platform_deployment_state.outputs.default_security_group_id]
+  vpc_subnet_ids                    = data.terraform_remote_state.platform_deployment_state.outputs.public_subnets[1]
+  ipv6_allowed_for_dual_stack       = true
+  attach_network_policy             = true
+  cloudwatch_logs_retention_in_days = 1
+  attach_policy_json                = true
   policy_json = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
