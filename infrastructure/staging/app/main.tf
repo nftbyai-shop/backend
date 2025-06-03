@@ -119,7 +119,7 @@ module "lambda_for_generating_nft" {
   layers = ["arn:aws:lambda:us-east-1:177933569100:layer:AWS-Parameters-and-Secrets-Lambda-Extension:17"]
 
   vpc_security_group_ids      = [data.terraform_remote_state.platform_deployment_state.outputs.default_security_group_id]
-  vpc_subnet_ids              = data.terraform_remote_state.platform_deployment_state.outputs.public_subnets
+  vpc_subnet_ids              = data.terraform_remote_state.platform_deployment_state.outputs.public_subnets[1]
   ipv6_allowed_for_dual_stack = true
   attach_network_policy       = true
 
