@@ -1,4 +1,4 @@
-name: Deploy Generate-NFT
+name: Build Generate-NFT container
 
 on: 
   workflow_dispatch:
