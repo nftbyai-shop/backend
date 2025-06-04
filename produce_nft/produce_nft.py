@@ -3,7 +3,6 @@ import datetime
 import json
 import logging
 import os
-import ssl
 import sys
 import time
 import urllib.parse
@@ -72,7 +71,7 @@ logger.addHandler(logging.StreamHandler(sys.stdout))
 with Session(engine) as session:
     stmt = select(Nft)
     for nft in session.scalars(stmt):
-        print(user)
+        print(nft)
 
 
 def main():
