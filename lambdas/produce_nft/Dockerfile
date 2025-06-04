@@ -1,5 +1,5 @@
 # Use an official base image
-FROM 3.12-alpine
+FROM python:3.12-alpine
 
 # Set working directory
 WORKDIR .

@@ -13,7 +13,7 @@ import requests
 from openai import OpenAI
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.images_response import ImagesResponse
-from shared.models import Nft
+from models import Nft
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session
 from tenacity import (

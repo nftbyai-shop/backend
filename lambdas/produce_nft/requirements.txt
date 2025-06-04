@@ -6,4 +6,3 @@ SQLAlchemy
 pg8000
 boto3
 tenacity
-../../shared
