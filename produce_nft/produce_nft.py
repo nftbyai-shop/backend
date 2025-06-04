@@ -68,7 +68,6 @@ logger.addHandler(logging.StreamHandler(sys.stdout))
 
 def main():
     try:
-        print("openapi key: ", OPENAI_API_KEY)
         # Generate idea
         client = OpenAI(api_key=OPENAI_API_KEY)
         image_idea_prompt: Any = [
