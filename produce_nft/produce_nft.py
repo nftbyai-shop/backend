@@ -26,12 +26,6 @@ from tenacity import (
 
 from models import Nft
 
-ssm = boto3.client(
-    "ssm",
-    config=boto3.session.Config(
-        connect_timeout=10, read_timeout=10, retries={"max_attempts": 4}
-    ),
-)
 DB_USER: str = os.environ["DB_USER"]
 DB_HOST: str = os.environ["DB_HOST"]
 DB_NAME: str = os.environ["DB_NAME"]
@@ -41,8 +35,18 @@ rds = boto3.client("rds", region_name=REGION)
 auth_token = rds.generate_db_auth_token(DB_HOST, DB_PORT, DB_USER)
 # ssl_ctx = ssl.create_default_context()
 engine: Engine = create_engine(
-    f"postgresql+pg8000://{DB_USER}:{urllib.parse.quote_plus(auth_token)}@{DB_HOST}/{DB_NAME}",
-    # connect_args={"ssl_context": ssl_ctx},
+    f"postgresql+psycopg://{DB_USER}:{urllib.parse.quote_plus(auth_token)}@{DB_HOST}/{DB_NAME}?sslmode=require"
+)
+with Session(engine) as session:
+    stmt = select(Nft)
+    for nft in session.scalars(stmt):
+        print(nft)
+
+ssm = boto3.client(
+    "ssm",
+    config=boto3.session.Config(
+        connect_timeout=10, read_timeout=10, retries={"max_attempts": 4}
+    ),
 )
 CROSSMINT_API_KEY_SSM_PATH: str = os.environ["CROSSMINT_API_KEY_SSM_PATH"]
 CROSSMINT_API_KEY: str = ssm.get_parameter(
@@ -66,12 +70,6 @@ json_logging.init_non_web(enable_json=True)
 logger: logging.Logger = logging.getLogger("nft-producer-service")
 logger.setLevel(LOG_LEVEL)
 logger.addHandler(logging.StreamHandler(sys.stdout))
-
-
-with Session(engine) as session:
-    stmt = select(Nft)
-    for nft in session.scalars(stmt):
-        print(nft)
 
 
 def main():
