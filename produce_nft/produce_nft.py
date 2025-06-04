@@ -24,14 +24,7 @@ from tenacity import (
 )
 import urllib.parse
 
-json_logging.init_non_web(enable_json=True)
-logger: logging.Logger = logging.getLogger("nft-producer-service")
-logger.setLevel(LOG_LEVEL)
-logger.addHandler(logging.StreamHandler(sys.stdout))
-
-
 def main():
-    
     ssm = boto3.client("ssm",config=boto3.session.Config(connect_timeout=10, read_timeout=10,retries = { "max_attempts": 4 }))
     DB_USER: str = os.environ["DB_USER"]
     DB_HOST: str = os.environ["DB_HOST"]
@@ -60,10 +53,14 @@ def main():
     IMAGE_SIZE: str = os.environ["IMAGE_SIZE"]
     IMAGE_QUALITY: str = os.environ["IMAGE_QUALITY"]
 
+    json_logging.init_non_web(enable_json=True)
+    logger: logging.Logger = logging.getLogger("nft-producer-service")
+    logger.setLevel(LOG_LEVEL)
+    logger.addHandler(logging.StreamHandler(sys.stdout))
 
     try:
-        # Generate idea
         print("openapi key: ", OPENAI_API_KEY)
+        # Generate idea
         client = OpenAI(api_key=OPENAI_API_KEY)
         image_idea_prompt: Any = [
             {
