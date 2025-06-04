@@ -3,6 +3,7 @@ import datetime
 import json
 import logging
 import os
+import ssl
 import sys
 import time
 import urllib.parse
@@ -39,8 +40,10 @@ DB_PORT = 5432
 REGION: str = os.environ["REGION"]
 rds = boto3.client("rds", region_name=REGION)
 auth_token = rds.generate_db_auth_token(DB_HOST, DB_PORT, DB_USER)
+ssl_ctx = ssl.create_default_context()
 engine: Engine = create_engine(
-    f"postgresql+pg8000://{DB_USER}:{urllib.parse.quote_plus(auth_token)}@{DB_HOST}/{DB_NAME}??ssl=true"
+    f"postgresql+pg8000://{DB_USER}:{urllib.parse.quote_plus(auth_token)}@{DB_HOST}/{DB_NAME}",
+    connect_args={"ssl_context": ssl_ctx},
 )
 CROSSMINT_API_KEY_SSM_PATH: str = os.environ["CROSSMINT_API_KEY_SSM_PATH"]
 CROSSMINT_API_KEY: str = ssm.get_parameter(
