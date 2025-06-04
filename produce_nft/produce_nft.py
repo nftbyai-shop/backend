@@ -39,11 +39,11 @@ def main():
     CROSSMINT_API_KEY_SSM_PATH: str = os.environ["CROSSMINT_API_KEY_SSM_PATH"]
     CROSSMINT_API_KEY: str = ssm.get_parameter(
         Name=CROSSMINT_API_KEY_SSM_PATH, WithDecryption=True
-    )
+    )["Parameter"]["Value"]
     OPENAI_API_KEY_SSM_PATH: str = os.environ["OPENAI_API_KEY_SSM_PATH"]
     OPENAI_API_KEY: str = ssm.get_parameter(
         Name=OPENAI_API_KEY_SSM_PATH, WithDecryption=True
-    )
+    )["Parameter"]["Value"]
     COLLECTION_ID: str = os.environ["COLLECTION_ID"]
     NFT_RECIPIENT: str = os.environ["NFT_RECIPIENT"]
     GPT_MODEL_1: str = os.environ["GPT_MODEL_1"]
