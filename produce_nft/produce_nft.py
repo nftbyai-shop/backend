@@ -40,8 +40,7 @@ REGION: str = os.environ["REGION"]
 rds = boto3.client("rds", region_name=REGION)
 auth_token = rds.generate_db_auth_token(DB_HOST, DB_PORT, DB_USER)
 engine: Engine = create_engine(
-    f"postgresql+pg8000://{DB_USER}:{urllib.parse.quote_plus(auth_token)}@{DB_HOST}/{DB_NAME}"
-    + "?sslmode=require"
+    f"postgresql+pg8000://{DB_USER}:{urllib.parse.quote_plus(auth_token)}@{DB_HOST}/{DB_NAME}?sslmode=require"
 )
 CROSSMINT_API_KEY_SSM_PATH: str = os.environ["CROSSMINT_API_KEY_SSM_PATH"]
 CROSSMINT_API_KEY: str = ssm.get_parameter(
