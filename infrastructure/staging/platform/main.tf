@@ -86,3 +86,12 @@ resource "aws_ecr_repository" "staging" {
   }
 }
 
+
+resource "aws_ecr_repository" "staging" {
+  name                 = "backend"
+  image_tag_mutability = "MUTABLE"
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+}
+
