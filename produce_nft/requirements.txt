@@ -1,0 +1,8 @@
+requests
+json_logging
+python-dotenv
+OpenAI
+SQLAlchemy
+pg8000
+boto3
+tenacity
