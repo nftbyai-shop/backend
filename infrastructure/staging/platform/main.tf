@@ -49,43 +49,12 @@ resource "aws_default_security_group" "default" {
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
   }
-}
-
-module "db" {
-  source = "terraform-aws-modules/rds/aws"
-
-  identifier = "nftdb"
-
-  engine         = "postgres"
-  engine_version = "17.2"
-  instance_class = "db.t4g.micro"
-  family         = "postgres17"
-
-  db_name                             = "nftdb"
-  username                            = "root"
-  port                                = "5432"
-  iam_database_authentication_enabled = true
-
-  storage_type       = "gp3"
-  allocated_storage  = 20
-  storage_encrypted  = true
-  maintenance_window = "Mon:01:00-Mon:02:00"
-  backup_window      = "03:00-03:30"
-
-  backup_retention_period = 7
-  tags = {
-    Owner       = "user"
-    Environment = "dev"
-  }
-
-  availability_zone      = "us-east-1a"
-  create_db_subnet_group = true
-  subnet_ids             = [module.vpc.private_subnets[0], module.vpc.private_subnets[1]]
 }
 
 module "s3_bucket_lambdas_389239" {
@@ -108,3 +77,12 @@ module "s3_bucket_nfts_38029" {
   object_ownership         = "BucketOwnerEnforced"
   restrict_public_buckets  = true
 }
+
+resource "aws_ecr_repository" "staging" {
+  name                 = "generate-nft"
+  image_tag_mutability = "MUTABLE"
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+}
+

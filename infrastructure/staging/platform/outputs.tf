@@ -5,13 +5,16 @@ output "db_instance_address" {
   value = module.db.db_instance_address
 }
 output "db_instance_master_user_secret_arn" {
-  value = module.db.db_instance_master_user_secret_arn
+  value = aws_ssm_parameter.db_password.arn
 }
 output "db_instance_resource_id" {
   value = module.db.db_instance_resource_id
 }
 output "db_instance_name" {
-   value = module.db.db_instance_name
+  value = module.db.db_instance_name
+}
+output "db_instance_port" {
+  value = module.db.db_instance_port
 }
 
 output "s3_bucket_name_for_nfts" {
