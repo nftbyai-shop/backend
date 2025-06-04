@@ -1,6 +1,9 @@
 name: Build Generate-NFT container
 
 on: 
+  push:
+      paths:
+      - 'produce_nft/**'
   workflow_dispatch:
 
 jobs:
