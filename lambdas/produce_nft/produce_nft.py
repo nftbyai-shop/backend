@@ -25,11 +25,6 @@ from tenacity import (
 import urllib.parse
 
 def main():
-    aws_session_token = os.environ.get('AWS_SESSION_TOKEN')
-    response = requests.get('http://localhost:2773/systemsmanager/parameters/get?name=db_password', headers={'X-Aws-Parameters-Secrets-Token':aws_session_token})
-    resp_js= response.json()    
-    print("ssm response is: ", resp_js)
-    config = urllib.request.urlopen(req).read()
     ssm = boto3.client("ssm",config=boto3.session.Config(connect_timeout=10, read_timeout=10,retries = { "max_attempts": 4 }))
     DB_USER: str = os.environ["DB_USER"]
     DB_HOST: str = os.environ["DB_HOST"]
