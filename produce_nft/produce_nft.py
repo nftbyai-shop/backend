@@ -57,7 +57,7 @@ IMAGE_GEN_MODEL: str = os.environ["IMAGE_GEN_MODEL"]
 S3_BUCKET: str = os.environ["S3_BUCKET"]
 LOG_LEVEL: str = os.environ["LOG_LEVEL"]
 IMAGE_SIZE: str = os.environ["IMAGE_SIZE"]
-IMAGE_QUALITY: str| None = os.environ["IMAGE_QUALITY"]
+IMAGE_QUALITY: str | None = os.environ["IMAGE_QUALITY"]
 
 
 json_logging.init_non_web(enable_json=True)
@@ -117,7 +117,7 @@ def main():
                 model=IMAGE_GEN_MODEL,
                 prompt=image_idea,
                 size=IMAGE_SIZE,
-                quality=IMAGE_QUALITY
+                quality=IMAGE_QUALITY,
                 response_format="b64_json",
                 n=1,
             )
