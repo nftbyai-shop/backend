@@ -16,7 +16,7 @@ import requests
 from openai import OpenAI
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.images_response import ImagesResponse
-from sqlalchemy import Engine, create_engine
+from sqlalchemy import Engine, create_engine, select
 from sqlalchemy.orm import Session
 from tenacity import (
     retry,
@@ -40,10 +40,10 @@ DB_PORT = 5432
 REGION: str = os.environ["REGION"]
 rds = boto3.client("rds", region_name=REGION)
 auth_token = rds.generate_db_auth_token(DB_HOST, DB_PORT, DB_USER)
-ssl_ctx = ssl.create_default_context()
+# ssl_ctx = ssl.create_default_context()
 engine: Engine = create_engine(
     f"postgresql+pg8000://{DB_USER}:{urllib.parse.quote_plus(auth_token)}@{DB_HOST}/{DB_NAME}",
-    connect_args={"ssl_context": ssl_ctx},
+    # connect_args={"ssl_context": ssl_ctx},
 )
 CROSSMINT_API_KEY_SSM_PATH: str = os.environ["CROSSMINT_API_KEY_SSM_PATH"]
 CROSSMINT_API_KEY: str = ssm.get_parameter(
@@ -67,6 +67,12 @@ json_logging.init_non_web(enable_json=True)
 logger: logging.Logger = logging.getLogger("nft-producer-service")
 logger.setLevel(LOG_LEVEL)
 logger.addHandler(logging.StreamHandler(sys.stdout))
+
+
+with Session(engine) as session:
+    stmt = select(Nft)
+    for nft in session.scalars(stmt):
+        print(user)
 
 
 def main():
