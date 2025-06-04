@@ -31,6 +31,6 @@ jobs:
           ECR_REPOSITORY: generate-nft
           IMAGE_TAG: latest
         run: |
-          cd lambdas/produce_nft
+          cd produce_nft
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
