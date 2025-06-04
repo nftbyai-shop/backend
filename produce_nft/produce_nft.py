@@ -57,7 +57,8 @@ IMAGE_GEN_MODEL: str = os.environ["IMAGE_GEN_MODEL"]
 S3_BUCKET: str = os.environ["S3_BUCKET"]
 LOG_LEVEL: str = os.environ["LOG_LEVEL"]
 IMAGE_SIZE: str = os.environ["IMAGE_SIZE"]
-IMAGE_QUALITY: str = os.environ["IMAGE_QUALITY"]
+IMAGE_QUALITY: str| None = os.environ["IMAGE_QUALITY"]
+
 
 json_logging.init_non_web(enable_json=True)
 logger: logging.Logger = logging.getLogger("nft-producer-service")
@@ -103,15 +104,23 @@ def main():
         image_title: str | None = completion2.choices[0].message.content
         logger.debug(f"image idea: {image_idea}")
         logger.debug(f"image title: {image_title}")
-
-        result: ImagesResponse = client.images.generate(
-            model=IMAGE_GEN_MODEL,
-            prompt=image_idea,
-            size=IMAGE_SIZE,
-            quality=IMAGE_QUALITY,
-            response_format="b64_json",
-            n=1,
-        )
+        if IMAGE_GEN_MODEL == "dall-e-2":
+            result: ImagesResponse = client.images.generate(
+                model=IMAGE_GEN_MODEL,
+                prompt=image_idea,
+                size=IMAGE_SIZE,
+                response_format="b64_json",
+                n=1,
+            )
+        else:
+            result: ImagesResponse = client.images.generate(
+                model=IMAGE_GEN_MODEL,
+                prompt=image_idea,
+                size=IMAGE_SIZE,
+                quality=IMAGE_QUALITY
+                response_format="b64_json",
+                n=1,
+            )
         image_base64 = result.data[0].b64_json
         image_bytes: bytes = base64.b64decode(image_base64)
 
