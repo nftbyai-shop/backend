@@ -1,9 +1,10 @@
-name: Build Backend Container
+name: Build FastApi Backend Container
 
 on: 
   push:
       paths:
-      - 'backend/**'
+      - 'fastapi-backend/**'
+      
   workflow_dispatch:
 
 jobs:
