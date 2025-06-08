@@ -1,8 +1,6 @@
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 
-from produce_nft.produce_nft import DB_PORT
-
 load_dotenv()
 
 
