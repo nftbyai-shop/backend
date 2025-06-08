@@ -5,7 +5,7 @@ from fastapi import Depends
 from fastapi.exceptions import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, SecurityScopes
 
-from app.config import get_settings
+from app.settings import get_settings
 
 
 class _TokenVerifier:
