@@ -17,6 +17,7 @@ class _Settings(BaseSettings):
     DB_NAME: str
     NFT_IMAGE_STORAGE_URL: str
     REGION: str
+    REQUIRE_SSL: bool = True
 
 
 Settings = _Settings
