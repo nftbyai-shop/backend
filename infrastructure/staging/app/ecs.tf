@@ -125,9 +125,6 @@ resource "aws_autoscaling_group" "ecs" {
   health_check_type = "EC2"
 }
 
-# -----------------------------------------------------------------------------
-# ECS cluster and service – module
-# -----------------------------------------------------------------------------
 module "ecs" {
   source  = "terraform-aws-modules/ecs/aws"
   version = "~> 5.0"
@@ -243,10 +240,7 @@ resource "aws_cloudwatch_log_group" "ecs_generate_nft" {
   name              = "/ecs/webserver-backend"
   retention_in_days = 7
 }
-# -----------------------------------------------------------------------------
-# EventBridge schedule – now launches the generate-nft task on EC2
-# -----------------------------------------------------------------------------
-# (Task definition and IAM roles are unchanged from your earlier config)
+
 resource "aws_scheduler_schedule" "trigger_ecs_task" {
   name = "run-ecs-task-schedule"
 
@@ -254,7 +248,7 @@ resource "aws_scheduler_schedule" "trigger_ecs_task" {
   schedule_expression = "rate(24 hours)"
 
   target {
-    arn      = module.ecs.cluster_arn # output from the ECS module
+    arn      = module.ecs.cluster_arn
     role_arn = aws_iam_role.eventbridge_invoke_ecs.arn
 
     ecs_parameters {
@@ -425,5 +419,3 @@ resource "aws_iam_role" "ecs_task_role" {
     }]
   })
 }
-
-# (Optional: attach additional policies for DB, S3, etc as needed)
