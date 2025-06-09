@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Command to run your app (adjust if needed)
-CMD ["fastapi", "run" "app/app.py"]
+CMD ["fastapi", "run" "app/app.py --port 8080 --host 0.0.0.0"]
