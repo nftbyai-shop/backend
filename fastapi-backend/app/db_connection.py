@@ -19,9 +19,11 @@ if not settings.DB_PASS:
         settings.DB_HOST, settings.DB_PORT, settings.DB_USER
     )
     db_pass = urllib.parse.quote_plus(auth_token)
+else:
+    db_pass = settings.DB_PASS
 
 _engine: AsyncEngine = create_async_engine(
-    f"postgresql+asyncpg://{settings.DB_USER}:{settings.DB_PASS}@{settings.DB_HOST}/{settings.DB_NAME}{('sslmode=require' if settings.REQUIRE_SSL else '')}",
+    f"postgresql+asyncpg://{settings.DB_USER}:{db_pass}@{settings.DB_HOST}/{settings.DB_NAME}{('sslmode=require' if settings.REQUIRE_SSL else '')}",
     echo=True,
 )
 
