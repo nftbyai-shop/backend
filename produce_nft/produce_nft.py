@@ -43,7 +43,7 @@ if not db_pass:
     db_pass = urllib.parse.quote_plus(auth_token)
 
 engine: Engine = create_engine(
-    f"postgresql+psycopg://{DB_USER}:{db_pass}@{DB_HOST}/{DB_NAME}{('sslmode=require' if REQUIRE_SSL else '')}",
+    f"postgresql+psycopg://{DB_USER}:{db_pass}@{DB_HOST}/{DB_NAME}{('?sslmode=require' if REQUIRE_SSL else '')}",
 )
 
 with Session(engine) as session:
