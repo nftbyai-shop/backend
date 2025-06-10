@@ -12,6 +12,8 @@ from typing import Any
 import boto3
 import json_logging
 import requests
+from dotenv import load_dotenv
+from models import Nft
 from openai import OpenAI
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.images_response import ImagesResponse
@@ -24,19 +26,26 @@ from tenacity import (
     wait_random_exponential,
 )
 
-from models import Nft
+load_dotenv()
+
 
 DB_USER: str = os.environ["DB_USER"]
 DB_HOST: str = os.environ["DB_HOST"]
 DB_NAME: str = os.environ["DB_NAME"]
 DB_PORT = 5432
 REGION: str = os.environ["REGION"]
+REQUIRE_SSL: bool = os.environ.get("REQUIRE_SSL", "true").lower() == "true"
 rds = boto3.client("rds", region_name=REGION)
-auth_token = rds.generate_db_auth_token(DB_HOST, DB_PORT, DB_USER)
-# ssl_ctx = ssl.create_default_context()
+
+db_pass: str = os.environ.get("DB_PASS", "")
+if not db_pass:
+    auth_token = rds.generate_db_auth_token(DB_HOST, DB_PORT, DB_USER)
+    db_pass = urllib.parse.quote_plus(auth_token)
+
 engine: Engine = create_engine(
-    f"postgresql+psycopg://{DB_USER}:{urllib.parse.quote_plus(auth_token)}@{DB_HOST}/{DB_NAME}?sslmode=require"
+    f"postgresql+psycopg://{DB_USER}:{db_pass}@{DB_HOST}/{DB_NAME}{('sslmode=require' if REQUIRE_SSL else '')}",
 )
+
 with Session(engine) as session:
     stmt = select(Nft)
     for nft in session.scalars(stmt):
@@ -47,6 +56,7 @@ ssm = boto3.client(
     config=boto3.session.Config(
         connect_timeout=10, read_timeout=10, retries={"max_attempts": 4}
     ),
+    region_name=REGION,
 )
 CROSSMINT_API_KEY_SSM_PATH: str = os.environ["CROSSMINT_API_KEY_SSM_PATH"]
 CROSSMINT_API_KEY: str = ssm.get_parameter(
