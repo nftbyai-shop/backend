@@ -40,14 +40,12 @@ module "vpc" {
 
 resource "aws_default_security_group" "default" {
   vpc_id = module.vpc.vpc_id
-
   ingress {
     protocol  = -1
     self      = true
     from_port = 0
     to_port   = 0
   }
-
   egress {
     from_port        = 0
     to_port          = 0
@@ -76,9 +74,25 @@ module "s3_bucket_nfts_38029" {
   control_object_ownership = true
   object_ownership         = "BucketOwnerEnforced"
   restrict_public_buckets  = true
+  versioning = {
+    enabled = true
+  }
+}
+module "s3_bucket_frontend-380220" {
+  source                   = "terraform-aws-modules/s3-bucket/aws"
+  bucket                   = "frontend-380220"
+  force_destroy            = false
+  request_payer            = "BucketOwner"
+  control_object_ownership = true
+  object_ownership         = "BucketOwnerEnforced"
+  restrict_public_buckets  = true
+  versioning = {
+    enabled = true
+  }
 }
 
-resource "aws_ecr_repository" "staging" {
+
+resource "aws_ecr_repository" "generate-nft" {
   name                 = "generate-nft"
   image_tag_mutability = "MUTABLE"
   image_scanning_configuration {
@@ -87,7 +101,7 @@ resource "aws_ecr_repository" "staging" {
 }
 
 
-resource "aws_ecr_repository" "staging" {
+resource "aws_ecr_repository" "backend" {
   name                 = "backend"
   image_tag_mutability = "MUTABLE"
   image_scanning_configuration {

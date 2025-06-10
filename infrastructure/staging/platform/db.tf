@@ -21,7 +21,7 @@ module "db" {
   create_db_subnet_group              = true
   subnet_ids                          = [module.vpc.private_subnets[0], module.vpc.private_subnets[1]]
   manage_master_user_password         = false
-  vpc_security_group_ids              = [module.vpc.default_security_group_id]
+  vpc_security_group_ids              = [aws_security_group.rds_sg.id]
 }
 
 resource "random_password" "db_password" {
@@ -37,4 +37,20 @@ resource "aws_ssm_parameter" "db_password" {
   type        = "SecureString"
   value       = random_password.db_password.result
   overwrite   = true
+}
+
+resource "aws_security_group" "rds_sg" {
+  name        = "rds-sg"
+  description = "RDS SG to be updated later"
+  vpc_id      = module.vpc.vpc_id
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+  tags = {
+    Name = "rds-sg"
+  }
 }

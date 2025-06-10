@@ -16,13 +16,14 @@ output "db_instance_name" {
 output "db_instance_port" {
   value = module.db.db_instance_port
 }
+output "db_instance_sg" {
+  value = aws_security_group.rds_sg.id
+}
 
+# s3 buckets
 output "s3_bucket_name_for_nfts" {
   value = module.s3_bucket_nfts_38029.s3_bucket_id
 }
-
-
-
 
 
 # vpc

@@ -1,7 +1,7 @@
 {
   "folders": [
     { "path": "fastapi-backend" },
-    { "path": "lambdas" },
+    { "path": "produce_nft" },
     { "path": "infrastructure" },
     { "path": "shared" },
   ]
