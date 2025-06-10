@@ -23,8 +23,9 @@ else:
     db_pass = settings.DB_PASS
 
 _engine: AsyncEngine = create_async_engine(
-    f"postgresql+asyncpg://{settings.DB_USER}:{db_pass}@{settings.DB_HOST}/{settings.DB_NAME}{('?sslmode=require' if settings.REQUIRE_SSL else '')}",
+    f"postgresql+asyncpg://{settings.DB_USER}:{db_pass}@{settings.DB_HOST}/{settings.DB_NAME}",
     echo=True,
+    # {('?sslmode=require' if settings.REQUIRE_SSL else '')}
 )
 
 _async_sessionmaker: async_sessionmaker[AsyncSession] = async_sessionmaker(
