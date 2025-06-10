@@ -2,7 +2,7 @@
 FROM python:3.12-alpine
 
 # Set working directory
-WORKDIR .
+WORKDIR /app
 
 # Copy dependency files first for better cache usage
 COPY requirements.txt ./
@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Command to run your app (adjust if needed)
-CMD ["fastapi", "run" "app/app.py --port 8080 --host 0.0.0.0"]
+CMD ["uvicorn", "app.app:app", "--host", "0.0.0.0", "--port", "8080"]
