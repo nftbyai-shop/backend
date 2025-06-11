@@ -15,11 +15,13 @@ settings: Settings = get_settings()
 rds = boto3.client("rds", region_name=settings.REGION)
 
 if not settings.DB_PASS:
+    print("No DB_PASS provided, generating auth token for RDS database connection.")
     auth_token = rds.generate_db_auth_token(
         settings.DB_HOST, settings.DB_PORT, settings.DB_USER
     )
     db_pass = urllib.parse.quote_plus(auth_token)
 else:
+    print("Using provided DB_PASS for RDS database connection.")
     db_pass = settings.DB_PASS
 
 _engine: AsyncEngine = create_async_engine(
