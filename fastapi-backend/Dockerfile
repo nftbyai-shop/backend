@@ -1,5 +1,14 @@
 # Use an official base image
 FROM python:3.12-slim
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl \
+    && curl -sSL https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem \
+    -o /usr/local/share/ca-certificates/rds-g1.pem \
+    && update-ca-certificates \
+    && apt-get clean
+
+
 # Set working directory
 WORKDIR /app
 
