@@ -25,22 +25,27 @@ module "ecs" {
       default_capacity_provider_strategy = { weight = 1, base = 0 }
     }
   }
-  fargate_capacity_providers = {}
+  fargate_capacity_providers = {
+    FARGATE = {
+      default_capacity_provider_strategy = null
+    }
+  }
   services = {
     webserver_backend = {
-      create_task_iam_role = false
-      tasks_iam_role_arn   = aws_iam_role.fastapi_backend_task_role.arn
-      desired_count        = 1
-      launch_type          = "EC2"
-      cpu                  = 256
-      memory               = 512
+      requires_compatibilities = ["EC2"]
+      create_task_iam_role     = false
+      tasks_iam_role_arn       = aws_iam_role.fastapi_backend_task_role.arn
+      desired_count            = 1
+      launch_type              = "EC2"
+      cpu                      = 512
+      memory                   = 512
 
       deployment_minimum_healthy_percent = 100
       deployment_maximum_percent         = 200
 
       container_definitions = {
         webserver-backend = {
-          cpu                       = 256
+          cpu                       = 512
           memory                    = 512
           essential                 = true
           image                     = "111111111111.dkr.ecr.us-east-1.amazonaws.com/backend:latest"

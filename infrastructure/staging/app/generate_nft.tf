@@ -1,10 +1,10 @@
 
 resource "aws_ecs_task_definition" "generate_nft" {
   family                   = "generate-nft"
-  requires_compatibilities = ["EC2"]
-  network_mode             = "bridge"
-  cpu                      = "256"
-  memory                   = "512"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = "1024"
+  memory                   = "2048"
   execution_role_arn       = aws_iam_role.generate_nft_execution_role.arn
   task_role_arn            = aws_iam_role.generate_nft_task_role.arn
   container_definitions = jsonencode([
@@ -12,8 +12,8 @@ resource "aws_ecs_task_definition" "generate_nft" {
       name      = "generate-nft"
       image     = "111111111111.dkr.ecr.us-east-1.amazonaws.com/generate-nft:latest"
       essential = true
-      cpu       = 256
-      memory    = 512
+      cpu       = 1024
+      memory    = 1024
       portMappings = [
         {
           containerPort = 8080
@@ -48,27 +48,59 @@ resource "aws_ecs_task_definition" "generate_nft" {
     }
   ])
 }
-resource "aws_cloudwatch_log_group" "generate_nft" {
-  name              = "/ecs/generate_nft"
-  retention_in_days = 7
-}
-
-resource "aws_scheduler_schedule" "trigger_ecs_task" {
-  name = "run-ecs-task-schedule"
-
-  flexible_time_window { mode = "OFF" }
+resource "aws_scheduler_schedule" "trigger_generate_nft" {
+  name                = "run-generate-nft"
   schedule_expression = "rate(24 hours)"
-
+  flexible_time_window { mode = "OFF" }
   target {
     arn      = module.ecs.cluster_arn
     role_arn = aws_iam_role.eventbridge_invoke_ecs.arn
 
     ecs_parameters {
       task_definition_arn = aws_ecs_task_definition.generate_nft.arn
-      launch_type         = "EC2"
+
+      capacity_provider_strategy {
+        capacity_provider = "FARGATE" # built-in provider name
+        weight            = 1
+      }
+      network_configuration {
+        subnets          = data.terraform_remote_state.platform_deployment_state.outputs.public_subnets
+        security_groups  = [aws_security_group.generate_nft_task.id]
+        assign_public_ip = true
+      }
     }
   }
 }
+
+
+resource "aws_security_group" "generate_nft_task" {
+  name        = "generate-nft-task-sg"
+  description = "Network rules for awsvpc ENIs of generate-nft tasks"
+  vpc_id      = data.terraform_remote_state.platform_deployment_state.outputs.vpc_id
+  egress {
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_security_group_rule" "generate_nft_to_rds" {
+  type                     = "ingress"
+  protocol                 = "tcp"
+  from_port                = 5432
+  to_port                  = 5432
+  security_group_id        = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_sg
+  source_security_group_id = aws_security_group.generate_nft_task.id
+  description              = "allow generate-nft tasks to connect to  RDS"
+}
+
+
+resource "aws_cloudwatch_log_group" "generate_nft" {
+  name              = "/ecs/generate-nft"
+  retention_in_days = 7
+}
+
 
 
 resource "aws_iam_role" "generate_nft_task_role" {
@@ -151,3 +183,4 @@ resource "aws_iam_role_policy" "eventbridge_invoke_ecs_policy" {
     ]
   })
 }
+
