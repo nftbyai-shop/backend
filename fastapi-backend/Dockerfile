@@ -1,14 +1,13 @@
 # Use an official base image
 FROM python:3.12-slim
 
-RUN set -eux; \
-    apt-get update; \
-    apt-get install -y --no-install-recommends ca-certificates curl; \
-    curl -sSL https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem \
-         -o /usr/local/share/ca-certificates/aws-rds-g1.crt;  # ← must be .crt
-    update-ca-certificates --fresh;                           # rebuild bundle
-    rm -rf /var/lib/apt/lists/*
-
+# Bring in curl and the CA bundle, then rebuild the trust store
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates curl \
+ && curl -sSL https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem \
+      -o /usr/local/share/ca-certificates/aws-rds-g1.crt \
+ && update-ca-certificates --fresh \
+ && rm -rf /var/lib/apt/lists/*
 
 
 
