@@ -13,6 +13,7 @@ from app.models import Nft
 from app.schemas import NftModel
 from app.settings import get_settings
 from app.verify_token import verify_token
+import stripe
 
 app = FastAPI()
 
@@ -54,6 +55,27 @@ async def get_nfts():
                 )
     return pydantic_nfts
 
+
+@app.post('/create-checkout-session')
+def create_checkout_session(item_id: str):
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            line_items=[
+                {
+                    # Provide the exact Price ID (for example, price_1234) of the product you want to sell
+                    'price': '{{PRICE_ID}}',
+                    'quantity': 1,
+                },
+            ],
+            mode='payment',
+            success_url=YOUR_DOMAIN + '?success=true',
+            cancel_url=YOUR_DOMAIN + '?canceled=true',
+            automatic_tax={'enabled': True},
+        )
+    except Exception as e:
+        return str(e)
+
+    return redirect(checkout_session.url, code=303)
 
 @app.get("/api/health")
 async def health_check():

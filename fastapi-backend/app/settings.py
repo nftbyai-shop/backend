@@ -19,6 +19,7 @@ class _Settings(BaseSettings):
     REGION: str
     REQUIRE_SSL: bool = True
     STRIPE_SECRET_KEY: str = ""
+    FRONTEND_URL: str
 
 
 Settings = _Settings
