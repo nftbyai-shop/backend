@@ -38,7 +38,8 @@ _async_sessionmaker: async_sessionmaker[AsyncSession] = async_sessionmaker(
 
 @event.listens_for(_engine.sync_engine, "do_connect")
 def provide_token(dialect, conn_rec, cargs, cparams):
-    client = boto3.client("rds")
+    client = boto3.client("rds", settings.REGION)
+
     auth_token = client.generate_db_auth_token(
         settings.DB_HOST, settings.DB_PORT, settings.DB_USER
     )
