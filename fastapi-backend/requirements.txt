@@ -7,3 +7,4 @@ python-dotenv>=1.1.0
 sqlalchemy[asyncio]>=2.0.40
 asyncpg
 boto3
+stripe
