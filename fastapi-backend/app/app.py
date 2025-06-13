@@ -13,6 +13,7 @@ from app.models import Nft
 from app.schemas import NftModel
 from app.settings import get_settings
 from app.verify_token import verify_token
+import stripe
 
 app = FastAPI()
 
@@ -26,7 +27,7 @@ app.add_middleware(
 
 
 @app.get("/api/test")
-async def test(request: Request) -> list[NftModel]:
+async def test(request: Request):
     # Print all request details
     print("----- REQUEST INFO -----")
     pprint(f"Method: {request.method}")
@@ -53,6 +54,38 @@ async def get_nfts():
                     NftModel.model_validate(data, from_attributes=False)
                 )
     return pydantic_nfts
+
+
+
+
+# This test secret API key is a placeholder. Don't include personal details in requests with this key.
+# To see your test secret API key embedded in code samples, sign in to your Stripe account.
+# You can also find your test secret API key at https://dashboard.stripe.com/test/apikeys.
+
+
+
+YOUR_DOMAIN = "http://localhost:4242"
+
+
+@app.post("/create-checkout-session")
+def create_checkout_session(item_id: str):
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            line_items=[
+                {
+                    # Provide the exact Price ID (for example, price_1234) of the product you want to sell
+                    "price": "{{PRICE_ID",
+                    "quantity": 1,
+                },
+            ],
+            mode="payment",
+            success_url=YOUR_DOMAIN + "?success=true",
+            cancel_url=YOUR_DOMAIN + "?canceled=true",
+        )
+    except Exception as e:
+        return str(e)
+
+    return redirect(checkout_session.url, code=303)
 
 
 @app.get("/api/health")

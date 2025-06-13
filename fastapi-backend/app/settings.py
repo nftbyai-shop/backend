@@ -18,9 +18,12 @@ class _Settings(BaseSettings):
     NFT_IMAGE_STORAGE_URL: str
     REGION: str
     REQUIRE_SSL: bool = True
+    STRIPE_SECRET_KEY: str = ""
 
 
 Settings = _Settings
+
+# TODO implement getting strip secret key from ssm
 
 
 def get_settings() -> Settings:

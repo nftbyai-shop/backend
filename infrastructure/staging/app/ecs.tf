@@ -60,19 +60,20 @@ module "ecs" {
             }
           }
           environment = [
-            { name = "AUTH0_DOMAIN", value = "https://dev-4zljthbwh3wy24vx.us.auth0.com" },
-            { name = "AUTH0_ISSUER", value = "https://dev-4zljthbwh3wy24vx.us.auth0.com/" },
-            { name = "AUTH0_API_AUDIENCE", value = "http://127.0.0.1:8000" },
-            { name = "AUTH0_ALGORITHMS", value = "RS256" },
-            { name = "CLIENT_URL", value = "http://localhost:5173" },
+            { name = "AUTH0_DOMAIN", value = var.auth0_domain },
+            { name = "AUTH0_ISSUER", value = var.auth0_issuer },
+            { name = "AUTH0_API_AUDIENCE", value = var.auth0_api_audience },
+            { name = "AUTH0_ALGORITHMS", value = var.auth0_algorithms },
+            { name = "ALLOW_ORIGINS_URLS", value = jsonencode(var.ALLOW_ORIGINS_URLS) },
             { name = "DB_USER", value = "app_user" },
             { name = "DB_HOST", value = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_address },
             { name = "DB_PORT", value = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_port },
             { name = "DB_NAME", value = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_name },
-            { name = "DEFAULT_NFT_OWNER", value = "email:owner@example.com:polygon" },
-            { name = "NFT_IMAGE_STORAGE_URL", value = "https://nfts-38029.s3.us-east-1.amazonaws.com" },
-            { name = "REGION", value = "us-east-1" }
+            { name = "DEFAULT_NFT_OWNER", value = var.default_nft_owner },
+            { name = "NFT_IMAGE_STORAGE_URL", value = var.nft_image_storage_url },
+            { name = "REGION", value = var.region },
           ]
+
         }
       }
       load_balancer = {

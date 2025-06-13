@@ -1,11 +1,18 @@
 resource "aws_lb_listener" "web_listener" {
   load_balancer_arn = aws_lb.web_alb.arn
-  port              = 80
-  protocol          = "HTTP"
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn   = "arn:aws:acm:us-east-1:111111111111:certificate/a5f14e8b-b350-4f5f-8832-de3fe4434205"
 
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.web_tg.arn
+  }
+  mutual_authentication {
+    mode                             = "verify"
+    trust_store_arn                  = data.terraform_remote_state.platform_deployment_state.outputs.trust_store_arn
+    ignore_client_certificate_expiry = false
   }
 }
 
@@ -28,7 +35,7 @@ resource "aws_lb_target_group" "web_tg" {
   vpc_id      = data.terraform_remote_state.platform_deployment_state.outputs.vpc_id
   target_type = "ip"
   health_check {
-    path                = "/"
+    path                = "/api/health"
     protocol            = "HTTP"
     matcher             = "200-399"
     interval            = 30
@@ -66,13 +73,13 @@ resource "aws_security_group" "alb_sg" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["198.51.100.7/32"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["198.51.100.7/32"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
   egress {
     from_port   = 0
