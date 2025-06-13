@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException, Request, Security
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import ScalarResult, select
 from sqlalchemy.ext.asyncio.session import AsyncSession, async_sessionmaker
+from urllib3 import HTTPResponse
 
 from app.db_connection import get_async_sessionmaker
 from app.models import Nft
@@ -16,9 +17,8 @@ from app.verify_token import verify_token
 app = FastAPI()
 
 app.add_middleware(
-    
     CORSMiddleware,
-    allow_origins=get_settings().client_url,
+    allow_origins=get_settings().ALLOW_ORIGINS_URLS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -53,6 +53,11 @@ async def get_nfts():
                     NftModel.model_validate(data, from_attributes=False)
                 )
     return pydantic_nfts
+
+
+@app.get("/api/health")
+async def health_check():
+    return HTTPResponse(status=200, reason="OK")
 
 
 @app.get("/api/private")
