@@ -12,8 +12,8 @@ from typing import Any
 import boto3
 import json_logging
 import requests
+import stripe
 from dotenv import load_dotenv
-from models import Nft
 from openai import OpenAI
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.images_response import ImagesResponse
@@ -25,6 +25,8 @@ from tenacity import (
     stop_after_attempt,
     wait_random_exponential,
 )
+
+from models import Nft
 
 load_dotenv()
 
@@ -74,8 +76,12 @@ S3_BUCKET: str = os.environ["S3_BUCKET"]
 LOG_LEVEL: str = os.environ["LOG_LEVEL"]
 IMAGE_SIZE: str = os.environ["IMAGE_SIZE"]
 IMAGE_QUALITY: str | None = os.environ["IMAGE_QUALITY"]
+STRIPE_SECRET_KEY_SSM_PATH: str = os.environ["STRIPE_SECRET_KEY_SSM_PATH"]
+STRIPE_SECRET_KEY: str = ssm.get_parameter(
+    Name=STRIPE_SECRET_KEY_SSM_PATH, WithDecryption=True
+)["Parameter"]["Value"]
 
-
+stripe.api_key = STRIPE_SECRET_KEY
 json_logging.init_non_web(enable_json=True)
 logger: logging.Logger = logging.getLogger("nft-producer-service")
 logger.setLevel(LOG_LEVEL)
@@ -117,6 +123,8 @@ def main():
             messages=title_prompt,
         )
         image_title: str | None = completion2.choices[0].message.content
+        if not image_title:
+            raise RuntimeError("Couldn't generate image title")
         logger.debug(f"image idea: {image_idea}")
         logger.debug(f"image title: {image_title}")
         if IMAGE_GEN_MODEL == "dall-e-2":
@@ -207,6 +215,14 @@ def main():
                 attempt += 1
         if not cid:
             raise RuntimeError("Couldn't get nft cid.")
+
+        stripe.Product.create(
+            name=image_title,
+            id=str(image_s3_key),
+            images=[f"http://{S3_BUCKET}.s3.{REGION}.amazonaws.com/{image_s3_key}"],
+            description=image_idea,
+            default_price_data={"currency": "cad", "unit_amount": 500},
+        )
 
         nft = Nft(
             timestamp=datetime.datetime.now(),
