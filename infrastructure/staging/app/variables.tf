@@ -36,6 +36,11 @@ variable "ALLOW_ORIGINS_URLS" {
   default     = ["http://staging.nftbyai.shop", "https://staging.nftbyai.shop", "http://staging-api.nftbyai.shop", "https://staging-api.nftbyai.shop"]
 }
 
+variable "FRONTEND_URL" {
+  type        = string
+  default     = "http://staging.nftbyai.shop"
+}
+
 
 ##############################
 # NFT service

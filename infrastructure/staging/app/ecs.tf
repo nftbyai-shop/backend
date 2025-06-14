@@ -72,6 +72,7 @@ module "ecs" {
             { name = "DEFAULT_NFT_OWNER", value = var.default_nft_owner },
             { name = "NFT_IMAGE_STORAGE_URL", value = var.nft_image_storage_url },
             { name = "REGION", value = var.region },
+            { name = "FRONTEND_URL", value = var.FRONTEND_URL },
           ]
 
         }

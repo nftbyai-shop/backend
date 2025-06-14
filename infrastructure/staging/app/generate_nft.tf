@@ -28,6 +28,7 @@ resource "aws_ecs_task_definition" "generate_nft" {
         { name = "REGION", value = "us-east-1" },
         { name = "CROSSMINT_API_KEY_SSM_PATH", value = "/staging/nft-producer-service/CROSSMINT_API_KEY" },
         { name = "OPENAI_API_KEY_SSM_PATH", value = "/staging/nft-producer-service/OPENAI_API_KEY" },
+        { name = "STRIPE_SECRET_KEY_SSM_PATH", value = "/staging/nft-producer-service/STRIPE_SECRET_KEY" },
         { name = "COLLECTION_ID", value = "2f36274e-3463-49c1-9ee4-a01205674540" },
         { name = "GPT_MODEL_1", value = "gpt-4.1-nano" },
         { name = "IMAGE_GEN_MODEL", value = "dall-e-3" },
@@ -36,6 +37,7 @@ resource "aws_ecs_task_definition" "generate_nft" {
         { name = "LOG_LEVEL", value = "DEBUG" },
         { name = "IMAGE_SIZE", value = "1024x1024" },
         { name = "IMAGE_QUALITY", value = "standard" }
+
       ]
       logConfiguration = {
         logDriver = "awslogs"
