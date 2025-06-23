@@ -9,11 +9,11 @@ resource "aws_lb_listener" "web_listener" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.web_tg.arn
   }
-  mutual_authentication {
-    mode                             = "verify"
-    trust_store_arn                  = data.terraform_remote_state.platform_deployment_state.outputs.trust_store_arn
-    ignore_client_certificate_expiry = false
-  }
+  # mutual_authentication {
+  #   mode                             = "verify"
+  #   trust_store_arn                  = data.terraform_remote_state.platform_deployment_state.outputs.trust_store_arn
+  #   ignore_client_certificate_expiry = false
+  # }
 }
 
 data "aws_ssm_parameter" "ecs_ami" {
@@ -67,19 +67,19 @@ resource "aws_launch_template" "backend-webserver" {
 
 resource "aws_security_group" "alb_sg" {
   name        = "alb_sg"
-  description = "Allow HTTP/HTTPS from office IP"
+  description = "Allow HTTP/HTTPS from Cloudflare"
   vpc_id      = data.terraform_remote_state.platform_deployment_state.outputs.vpc_id
   ingress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = data.cloudflare_ip_ranges.cf.ipv4_cidrs
   }
   ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = data.cloudflare_ip_ranges.cf.ipv4_cidrs
   }
   egress {
     from_port   = 0
@@ -88,6 +88,8 @@ resource "aws_security_group" "alb_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+data "cloudflare_ip_ranges" "cf" {}
+
 
 resource "aws_security_group" "ecs_instance_sg" {
   name   = "ecs-instance-sg"
@@ -118,20 +120,3 @@ resource "aws_security_group_rule" "from_webserver_to_rds" {
 }
 
 
-
-resource "aws_iam_role" "fastapi_backend_task_role" {
-  name = "ecs-admin-task-role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect    = "Allow"
-      Principal = { Service = "ecs-tasks.amazonaws.com" }
-      Action    = "sts:AssumeRole"
-    }]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "fastapi_backend_task_role_policy_attachment" {
-  role       = aws_iam_role.fastapi_backend_task_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
-}

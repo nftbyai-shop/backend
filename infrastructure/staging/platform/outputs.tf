@@ -26,6 +26,11 @@ output "s3_bucket_name_for_nfts" {
 }
 
 
+
+output "trust_store_arn" {
+  value = aws_lb_trust_store.trust_store.arn
+}
+
 # vpc
 output "vpc_id" {
   value = module.vpc.vpc_id
