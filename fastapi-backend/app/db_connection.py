@@ -1,4 +1,5 @@
 import urllib.parse
+from venv import logger
 
 import boto3
 from sqlalchemy import event
@@ -40,7 +41,8 @@ _async_sessionmaker: async_sessionmaker[AsyncSession] = async_sessionmaker(
 def provide_token(dialect, conn_rec, cargs, cparams):
     if not settings.DB_PASS:
         client = boto3.client("rds", region_name=settings.REGION)
-
+        
+        logger.debug("Updating auth token for db connection")
         auth_token = client.generate_db_auth_token(
             settings.DB_HOST, settings.DB_PORT, settings.DB_USER
         )

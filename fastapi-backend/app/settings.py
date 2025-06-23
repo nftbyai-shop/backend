@@ -15,16 +15,25 @@ class _Settings(BaseSettings):
     DB_HOST: str
     DB_PORT: int
     DB_NAME: str
-    NFT_IMAGE_STORAGE_URL: str
-    REGION: str
     REQUIRE_SSL: bool = True
-    STRIPE_SECRET_KEY: str = ""
+    DEFAULT_NFT_OWNER: str
+    NFT_IMAGE_STORAGE_URL: str
     FRONTEND_URL: str
+    SUCCESSFULL_PURCHASE_URL: str
+    FAILED_PURCHASE_URL: str
+    STRIPE_SECRET_KEY: str = ""
+    CROSSMINT_SECRET_KEY: str = ""
+    REGION: str
+    LOG_LEVEL: str = "DEBUG"
+    NFTBYAI_WALLET_ADDRESS: str
+    SMTP_HOST: str
+    SMTP_PORT: str
+    SMTP_USER: str
+    SMTP_PASS: str
+    REPORT_TO_EMAIL: str
 
 
 Settings = _Settings
-
-# TODO implement getting strip secret key from ssm
 
 
 def get_settings() -> Settings:
@@ -32,3 +41,12 @@ def get_settings() -> Settings:
 
 
 _settings = _Settings()
+
+
+if not _settings.CROSSMINT_SECRET_KEY:
+    pass
+    # TODO implement this
+if not _settings.STRIPE_SECRET_KEY:
+    pass
+if not _settings.SMTP_PASS:
+    pass

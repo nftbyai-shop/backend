@@ -10,6 +10,7 @@ class ImageQuality(str, Enum):
     hd = "hd"
     high = "high"
     low = "low"
+    medium = "medium"
 
 
 class NftModel(BaseModel):
@@ -32,5 +33,6 @@ class NftModel(BaseModel):
     image_size: str
     image_quality: ImageQuality
     image_url: str
+    available_for_sale: bool
     # s3_object_name: str
     # s3_bucket_name: str

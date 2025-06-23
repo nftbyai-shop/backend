@@ -12,7 +12,6 @@ class _TokenVerifier:
     def __init__(self) -> None:
         self.config = get_settings()
         jwks_url: str = f"{self.config.auth0_domain}/.well-known/jwks.json"
-        print("jwks_url: ", jwks_url)
         self.jwks_client = jwt.PyJWKClient(jwks_url)
 
     # TODO: get_signing_key_from_jwt is an event loop blocking call
@@ -35,8 +34,8 @@ class _TokenVerifier:
                 audience=self.config.auth0_api_audience,
                 issuer=self.config.auth0_issuer,
             )
-        except Exception as error:
-            raise HTTPException(403, str(error))
+        except Exception:
+            raise HTTPException(403)
         return payload
 
 
@@ -48,14 +47,13 @@ http_bearer = HTTPBearer()
 async def verify_token(
     token: Annotated[Optional[HTTPAuthorizationCredentials], Depends(http_bearer)],
     security_scopes: SecurityScopes,
-) -> bool:
-    print(f"token is: {token}")
-    print(f"{dir(token)}")
-
+):
+    print("we are here 0 ")
     payload: dict[str, Any] = await _token_verifier.verify(
         token=token, security_scopes=security_scopes
     )
+    print("jwk token payload is: ", payload)
     if payload:
-        return True
+        return payload
     else:
-        return False
+        return HTTPException(401)
