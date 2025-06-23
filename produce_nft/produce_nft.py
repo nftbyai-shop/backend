@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.images_response import ImagesResponse
-from sqlalchemy import Engine, create_engine, select
+from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session
 from tenacity import (
     retry,
@@ -47,11 +47,6 @@ if not db_pass:
 engine: Engine = create_engine(
     f"postgresql+psycopg://{DB_USER}:{db_pass}@{DB_HOST}/{DB_NAME}{('?sslmode=require' if REQUIRE_SSL else '')}",
 )
-
-with Session(engine) as session:
-    stmt = select(Nft)
-    for nft in session.scalars(stmt):
-        print(nft)
 
 ssm = boto3.client(
     "ssm",
@@ -99,13 +94,13 @@ def main():
             },
             {
                 "role": "user",
-                "content": "Give me a sick, random and truly unique idea for an image.",
+                "content": 'Give me a sick, positive, random and "not-AI-like" idea for an image in PHOTOREALISM style.',
             },
         ]
         completion: ChatCompletion = client.chat.completions.create(
             model=GPT_MODEL_1,
             messages=image_idea_prompt,
-            temperature=1.50,
+            temperature=1.40,
         )
         image_idea: str | None = completion.choices[0].message.content
         if not image_idea:
@@ -115,7 +110,7 @@ def main():
         title_prompt: Any = [
             {
                 "role": "user",
-                "content": f"Generate 1-5 word catchy and provocative title for this image description: {image_idea}",
+                "content": f"Generate 1-4 word catchy and provocative title for this image description: {image_idea}",
             }
         ]
         completion2: ChatCompletion = client.chat.completions.create(
@@ -125,34 +120,45 @@ def main():
         image_title: str | None = completion2.choices[0].message.content
         if not image_title:
             raise RuntimeError("Couldn't generate image title")
+
+        styled_image_idea: str = "Style: PHOTOREALISM. " + image_idea
         logger.debug(f"image idea: {image_idea}")
         logger.debug(f"image title: {image_title}")
         if IMAGE_GEN_MODEL == "dall-e-2":
             result: ImagesResponse = client.images.generate(
                 model=IMAGE_GEN_MODEL,
-                prompt=image_idea,
+                prompt=styled_image_idea,
                 size=IMAGE_SIZE,
+                response_format="b64_json",
+                n=1,
+            )
+        elif IMAGE_GEN_MODEL == "dall-e-3":
+            result: ImagesResponse = client.images.generate(
+                model=IMAGE_GEN_MODEL,
+                prompt=styled_image_idea,
+                size=IMAGE_SIZE,
+                quality=IMAGE_QUALITY,
                 response_format="b64_json",
                 n=1,
             )
         else:
             result: ImagesResponse = client.images.generate(
                 model=IMAGE_GEN_MODEL,
-                prompt=image_idea,
+                prompt=styled_image_idea,
                 size=IMAGE_SIZE,
                 quality=IMAGE_QUALITY,
-                response_format="b64_json",
                 n=1,
             )
+
         image_base64 = result.data[0].b64_json
         image_bytes: bytes = base64.b64decode(image_base64)
 
         # Write image to s3
-        image_s3_key = uuid.uuid4()
+        image_s3_key = str(uuid.uuid4())
         s3 = boto3.client("s3")
         s3.put_object(
             Bucket=S3_BUCKET,
-            Key=str(image_s3_key),
+            Key=image_s3_key,
             Body=image_bytes,
             ContentType="image/jpeg",
         )
@@ -160,7 +166,7 @@ def main():
         # Create url for s3 image
         url = s3.generate_presigned_url(
             "get_object",
-            Params={"Bucket": S3_BUCKET, "Key": str(image_s3_key)},
+            Params={"Bucket": S3_BUCKET, "Key": image_s3_key},
             ExpiresIn=3600,
         )
         logger.debug(f"Image url: {url}")
@@ -197,6 +203,7 @@ def main():
         # Get mint status
         crossmint_mint_status_url = f"https://staging.crossmint.com/api/2022-06-09/collections/{COLLECTION_ID}/nfts/{crossmint_id}"
         cid = None
+        token_id: str | None = None
         attempt = 0
         while not cid and attempt < 6:
             try:
@@ -210,18 +217,28 @@ def main():
 
                 json_response = response.json()
                 cid = json_response["metadata"]["image"].strip("ipfs://")
+                token_id = json_response["onChain"]["tokenId"]
             except Exception:
                 time.sleep(30)
                 attempt += 1
         if not cid:
             raise RuntimeError("Couldn't get nft cid.")
+        if not token_id:
+            raise RuntimeError("Couldn't get token_id.")
 
         stripe.Product.create(
             name=image_title,
-            id=str(image_s3_key),
+            id="prod_" + image_s3_key,
             images=[f"http://{S3_BUCKET}.s3.{REGION}.amazonaws.com/{image_s3_key}"],
             description=image_idea,
-            default_price_data={"currency": "cad", "unit_amount": 500},
+            tax_code="txcd_10505001",
+        )
+
+        stripe.Price.create(
+            currency="cad",
+            unit_amount=500,
+            product="prod_" + image_s3_key,
+            lookup_key="price_" + image_s3_key,
         )
 
         nft = Nft(
@@ -231,6 +248,7 @@ def main():
             owner=NFT_RECIPIENT,
             ipfs_cid=cid,
             contract_address=contract_address,
+            token_id=token_id,
             chain_name=chain_name,
             image_idea_llm=GPT_MODEL_1,
             image_title_llm=GPT_MODEL_1,
