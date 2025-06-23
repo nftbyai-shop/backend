@@ -1,10 +1,9 @@
 import os
 from logging.config import fileConfig
 
+from alembic import context
 from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
-
-from alembic import context
 
 load_dotenv()
 
@@ -18,8 +17,9 @@ db_user: str = os.environ["DB_USER"]
 db_pass: str = os.environ["DB_PASS"]
 db_host: str = os.environ["DB_HOST"]
 db_name: str = os.environ["DB_NAME"]
+db_port: str = os.environ["DB_PORT"]
 
-db_url: str = f"postgresql://{db_user}:{db_pass}@{db_host}/{db_name}"
+db_url: str = f"postgresql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
 
 # Override the sqlalchemy.url value
 config.set_main_option("sqlalchemy.url", db_url)

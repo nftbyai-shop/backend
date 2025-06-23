@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
+import boto3
 
 load_dotenv()
 
@@ -23,6 +24,9 @@ class _Settings(BaseSettings):
     FAILED_PURCHASE_URL: str
     STRIPE_SECRET_KEY: str = ""
     CROSSMINT_SECRET_KEY: str = ""
+    CROSSMINT_API_KEY_SSM_PATH: str = ""
+    STRIPE_SECRET_KEY_SSM_PATH: str = ""
+    SMTP_PASS_SSM_PATH: str = ''
     REGION: str
     LOG_LEVEL: str = "DEBUG"
     NFTBYAI_WALLET_ADDRESS: str
@@ -43,10 +47,28 @@ def get_settings() -> Settings:
 _settings = _Settings()
 
 
+ssm = boto3.client(
+    "ssm",
+    config=boto3.session.Config(
+        connect_timeout=10, read_timeout=10, retries={"max_attempts": 4}
+    ),
+    region_name=_settings.REGION,
+)
+
 if not _settings.CROSSMINT_SECRET_KEY:
-    pass
-    # TODO implement this
+    CROSSMINT_API_KEY: str = ssm.get_parameter(
+    Name=_settings.CROSSMINT_API_KEY_SSM_PATH, WithDecryption=True
+)["Parameter"]["Value"]
+    _settings.CROSSMINT_SECRET_KEY = CROSSMINT_API_KEY
+
 if not _settings.STRIPE_SECRET_KEY:
-    pass
+    STRIPE_API_KEY: str = ssm.get_parameter(
+    Name=_settings.STRIPE_SECRET_KEY_SSM_PATH, WithDecryption=True
+)["Parameter"]["Value"]
+    _settings.STRIPE_SECRET_KEY = STRIPE_API_KEY
+
 if not _settings.SMTP_PASS:
-    pass
+    smtp_pass: str = ssm.get_parameter(
+    Name=_settings.SMTP_PASS_SSM_PATH, WithDecryption=True
+)["Parameter"]["Value"]
+    _settings.SMTP_PASS = smtp_pass
