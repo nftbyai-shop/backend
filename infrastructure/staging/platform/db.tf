@@ -15,13 +15,14 @@ module "db" {
   storage_encrypted                   = true
   maintenance_window                  = "Mon:01:00-Mon:02:00"
   backup_window                       = "03:00-03:30"
-  network_type                        = "DUAL"
+  network_type                        = "IPV4"
   backup_retention_period             = 7
   availability_zone                   = "us-east-1a"
   create_db_subnet_group              = true
   subnet_ids                          = [module.vpc.private_subnets[0], module.vpc.private_subnets[1]]
   manage_master_user_password         = false
   vpc_security_group_ids              = [aws_security_group.rds_sg.id]
+  snapshot_identifier                 = "nftdb-snapshot"
 }
 
 resource "random_password" "db_password" {

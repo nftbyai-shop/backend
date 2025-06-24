@@ -9,11 +9,6 @@ resource "aws_lb_listener" "web_listener" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.web_tg.arn
   }
-  # mutual_authentication {
-  #   mode                             = "verify"
-  #   trust_store_arn                  = data.terraform_remote_state.platform_deployment_state.outputs.trust_store_arn
-  #   ignore_client_certificate_expiry = false
-  # }
 }
 
 data "aws_ssm_parameter" "ecs_ami" {
@@ -29,11 +24,11 @@ resource "aws_lb" "web_alb" {
 }
 
 resource "aws_lb_target_group" "web_tg" {
-  name        = "webserver-tg"
+  name        = "web-tg"
   port        = 8080
   protocol    = "HTTP"
   vpc_id      = data.terraform_remote_state.platform_deployment_state.outputs.vpc_id
-  target_type = "ip"
+  target_type = "instance"
   health_check {
     path                = "/api/health"
     protocol            = "HTTP"
@@ -115,8 +110,10 @@ resource "aws_security_group_rule" "from_webserver_to_rds" {
   to_port                  = 5432
   protocol                 = "tcp"
   security_group_id        = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_sg
-  source_security_group_id = module.ecs.services.webserver_backend.security_group_id
+  source_security_group_id = aws_security_group.ecs_instance_sg.id
   description              = "Allow ECS tasks to access RDS"
+  depends_on               = [module.ecs]
 }
+
 
 

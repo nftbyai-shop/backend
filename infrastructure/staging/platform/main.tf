@@ -35,11 +35,13 @@ module "vpc" {
   private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
   public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
 
-  enable_ipv6                                   = true
+  enable_ipv6                                   = false
   public_subnet_assign_ipv6_address_on_creation = false
+  intra_subnet_assign_ipv6_address_on_creation  = false
+  private_subnet_enable_dns64                   = false
 
-  public_subnet_ipv6_prefixes  = [0, 1, 2]
-  private_subnet_ipv6_prefixes = [3, 4, 5]
+  # public_subnet_ipv6_prefixes  = [0, 1, 2]
+  # private_subnet_ipv6_prefixes = [3, 4, 5]
 
 }
 
@@ -52,11 +54,11 @@ resource "aws_default_security_group" "default" {
     to_port   = 0
   }
   egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+    # ipv6_cidr_blocks = ["::/0"]
   }
 }
 
@@ -135,9 +137,9 @@ resource "aws_s3_bucket_website_configuration" "website_hosting" {
   index_document {
     suffix = "index.html"
   }
-  # error_document {
-  #   key = "error.html" #TODO: maybe add it later
-  # }
+  error_document {
+    key = "index.html"
+  }
 }
 resource "aws_s3_bucket_public_access_block" "example" {
   bucket                  = module.s3_bucket_staging_nftbyai_shop.s3_bucket_id

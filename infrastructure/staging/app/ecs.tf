@@ -34,11 +34,14 @@ module "ecs" {
     webserver_backend = {
       requires_compatibilities = ["EC2"]
       create_task_iam_role     = false
-      tasks_iam_role_arn       = aws_iam_role.fastapi_backend_task_role.arn
-      desired_count            = 1
-      launch_type              = "EC2"
-      cpu                      = 512
-      memory                   = 512
+      task_iam_role_arn        = aws_iam_role.fastapi_backend_task_role.arn
+
+      network_mode = "host"
+
+      desired_count = 1
+      launch_type   = "EC2"
+      cpu           = 512
+      memory        = 512
 
       deployment_minimum_healthy_percent = 100
       deployment_maximum_percent         = 200
@@ -69,12 +72,23 @@ module "ecs" {
             { name = "DB_HOST", value = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_address },
             { name = "DB_PORT", value = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_port },
             { name = "DB_NAME", value = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_name },
+            { name = "CROSSMINT_API_KEY_SSM_PATH", value = "/staging/nft-producer-service/CROSSMINT_API_KEY" },
+            { name = "STRIPE_SECRET_KEY_SSM_PATH", value = "/staging/nft-producer-service/STRIPE_SECRET_KEY" },
+            { name = "STRIPE_WEBHOOK_SIGNING_SECRET_SSM_PATH", value = "/staging/nft-producer-service/STRIPE_WEBHOOK_SIGNING_SECRET" },
+            { name = "NFTBYAI_WALLET_ADDRESS", value = "0xA45BB78a84eA17CA64876D89CeD76ff1E837e759" },
+            { name = "SMTP_PASS_SSM_PATH", value = "/staging/nft-producer-service/SMTP_PASS" },
+            { name = "SMTP_HOST", value = "smtp.gmail.com" },
+            { name = "SMTP_PORT", value = 465 },
+            { name = "SMTP_USER", value = "ops@example.com" },
+            { name = "SMTP_PASS", value = "REDACTED_SMTP_PASSWORD" },
+            { name = "REPORT_TO_EMAIL", value = "alerts+staging3@gmail.com" },
+            { name = "SUCCESSFULL_PURCHASE_URL", value = "http://staging.nftbyai.shop/confirmation" },
+            { name = "FAILED_PURCHASE_URL", value = "http://staging.nftbyai.shop" },
             { name = "DEFAULT_NFT_OWNER", value = var.default_nft_owner },
             { name = "NFT_IMAGE_STORAGE_URL", value = var.nft_image_storage_url },
             { name = "REGION", value = var.region },
             { name = "FRONTEND_URL", value = var.FRONTEND_URL },
           ]
-
         }
       }
       load_balancer = {
@@ -180,3 +194,9 @@ resource "aws_iam_instance_profile" "backend_webserver_instance_profile" {
   name = "backend_webserver_instance_profile"
   role = aws_iam_role.ecs_instance_role.name
 }
+
+resource "aws_iam_role_policy_attachment" "webserver_backend_task_role_attach" {
+  role       = module.ecs.services["webserver_backend"].tasks_iam_role_name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
+
