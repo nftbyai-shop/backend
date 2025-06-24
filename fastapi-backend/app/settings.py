@@ -26,6 +26,8 @@ class _Settings(BaseSettings):
     CROSSMINT_SECRET_KEY: str = ""
     CROSSMINT_API_KEY_SSM_PATH: str = ""
     STRIPE_SECRET_KEY_SSM_PATH: str = ""
+    STRIPE_WEBHOOK_SIGNING_SECRET: str = ""
+    STRIPE_WEBHOOK_SIGNING_SECRET_SSM_PATH: str = ""
     SMTP_PASS_SSM_PATH: str = ''
     REGION: str
     LOG_LEVEL: str = "DEBUG"
@@ -72,3 +74,10 @@ if not _settings.SMTP_PASS:
     Name=_settings.SMTP_PASS_SSM_PATH, WithDecryption=True
 )["Parameter"]["Value"]
     _settings.SMTP_PASS = smtp_pass
+
+
+if not _settings.STRIPE_WEBHOOK_SIGNING_SECRET:
+    stripe_webhook_signing_secret: str = ssm.get_parameter(
+    Name=_settings.STRIPE_WEBHOOK_SIGNING_SECRET_SSM_PATH, WithDecryption=True
+)["Parameter"]["Value"]
+    _settings.STRIPE_WEBHOOK_SIGNING_SECRET = stripe_webhook_signing_secret
