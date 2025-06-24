@@ -20,10 +20,8 @@ from app.settings import get_settings
 # Sub-app without CORS
 webhook_app = FastAPI()
 
-endpoint_secret: str = get_settings().
-(
-    ""
-)
+endpoint_secret: str = get_settings().STRIPE_WEBHOOK_SIGNING_SECRET
+
 logger = logging.getLogger()
 
 
