@@ -14,3 +14,4 @@ eth-utils
 eth-abi
 eth-hash[pycryptodome]
 slowapi
+pg8000

@@ -49,7 +49,7 @@ app.add_middleware(SlowAPIMiddleware)
 
 
 # TODO add rate limiting everywhere
-@app.get("/api/nfts")
+@app.get("/api/nfts")   
 async def get_nfts():
     session_maker: async_sessionmaker[AsyncSession] = get_async_sessionmaker()
     pydantic_nfts: list[NftModel] = []
