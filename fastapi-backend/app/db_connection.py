@@ -28,7 +28,7 @@ else:
 
 _engine: AsyncEngine = create_async_engine(
     f"postgresql+asyncpg://{settings.DB_USER}:{db_pass}@{settings.DB_HOST}/{settings.DB_NAME}",
-    echo=True,
+    echo=(True if settings.LOG_LEVEL == "DEBUG"  else False),
     connect_args={"ssl": settings.REQUIRE_SSL},
 )
 

@@ -48,11 +48,9 @@ async def verify_token(
     token: Annotated[Optional[HTTPAuthorizationCredentials], Depends(http_bearer)],
     security_scopes: SecurityScopes,
 ):
-    print("we are here 0 ")
     payload: dict[str, Any] = await _token_verifier.verify(
         token=token, security_scopes=security_scopes
     )
-    print("jwk token payload is: ", payload)
     if payload:
         return payload
     else:
