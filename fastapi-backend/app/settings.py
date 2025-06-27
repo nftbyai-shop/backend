@@ -1,7 +1,9 @@
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 import boto3
+import logging
 
+logger = logging.getLogger()
 load_dotenv()
 
 
@@ -58,7 +60,7 @@ ssm = boto3.client(
 )
 
 if not _settings.CROSSMINT_SECRET_KEY:
-    print("CROSSMINT_API_KEY_SSM_PATH: ", _settings.CROSSMINT_API_KEY_SSM_PATH)
+    logger.debug("CROSSMINT_API_KEY_SSM_PATH: ", _settings.CROSSMINT_API_KEY_SSM_PATH) 
     CROSSMINT_API_KEY: str = ssm.get_parameter(
     Name=_settings.CROSSMINT_API_KEY_SSM_PATH, WithDecryption=True
 )["Parameter"]["Value"]
