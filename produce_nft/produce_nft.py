@@ -39,14 +39,7 @@ REGION: str = os.environ["REGION"]
 REQUIRE_SSL: bool = os.environ.get("REQUIRE_SSL", "true").lower() == "true"
 rds = boto3.client("rds", region_name=REGION)
 
-db_pass: str = os.environ.get("DB_PASS", "")
-if not db_pass:
-    auth_token = rds.generate_db_auth_token(DB_HOST, DB_PORT, DB_USER)
-    db_pass = urllib.parse.quote_plus(auth_token)
 
-engine: Engine = create_engine(
-    f"postgresql+psycopg://{DB_USER}:{db_pass}@{DB_HOST}/{DB_NAME}{('?sslmode=require' if REQUIRE_SSL else '')}",
-)
 
 ssm = boto3.client(
     "ssm",
@@ -240,7 +233,8 @@ def main():
             product="prod_" + image_s3_key,
             lookup_key="price_" + image_s3_key,
         )
-
+        
+        
         nft = Nft(
             timestamp=datetime.datetime.now(),
             name=image_title,
@@ -261,6 +255,15 @@ def main():
             s3_object_name=image_s3_key,
             s3_bucket_name=S3_BUCKET,
         )
+
+        db_pass: str = os.environ.get("DB_PASS", "")
+        if not db_pass:
+            auth_token = rds.generate_db_auth_token(DB_HOST, DB_PORT, DB_USER)
+            db_pass = urllib.parse.quote_plus(auth_token)
+
+        engine: Engine = create_engine(
+            f"postgresql+psycopg://{DB_USER}:{db_pass}@{DB_HOST}/{DB_NAME}{('?sslmode=require' if REQUIRE_SSL else '')}",
+        )        
 
         with Session(engine) as session:
             session.add(nft)
