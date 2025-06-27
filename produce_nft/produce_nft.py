@@ -263,6 +263,7 @@ def main():
 
         engine: Engine = create_engine(
             f"postgresql+psycopg://{DB_USER}:{db_pass}@{DB_HOST}/{DB_NAME}{('?sslmode=require' if REQUIRE_SSL else '')}",
+            pool_pre_ping=True, 
         )        
 
         with Session(engine) as session:
