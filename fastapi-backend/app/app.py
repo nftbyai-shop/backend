@@ -25,7 +25,6 @@ from app.verify_token import verify_token
 settings = get_settings()
 
 logger = logging.getLogger()
-logger.setLevel(settings.LOG_LEVEL)
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 

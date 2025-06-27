@@ -6,7 +6,6 @@ import logging
 logger = logging.getLogger()
 load_dotenv()
 
-
 class _Settings(BaseSettings):
     auth0_domain: str
     auth0_api_audience: str
@@ -44,12 +43,13 @@ class _Settings(BaseSettings):
 Settings = _Settings
 
 
+_settings = _Settings()
+
 def get_settings() -> Settings:
     return _settings
 
-
-_settings = _Settings()
-
+logger = logging.getLogger()
+logger.setLevel(_settings.LOG_LEVEL)
 
 ssm = boto3.client(
     "ssm",
