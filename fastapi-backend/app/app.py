@@ -63,11 +63,9 @@ async def get_nfts():
             pydantic_nfts.append(NftModel.model_validate(data, from_attributes=False))
     return pydantic_nfts
 
-
 class CheckoutParams(BaseModel):
     user_email: EmailStr
     item_id: int
-
 
 @app.post("/api/create-checkout-session")
 async def create_checkout_session(
@@ -109,7 +107,6 @@ async def create_checkout_session(
     )
     if not checkout_session.url:
         raise HTTPException(status_code=500, detail="Failed to create checkout session")
-
     return {"checkout_url": checkout_session.url}
 
 
