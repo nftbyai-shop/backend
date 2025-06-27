@@ -3,7 +3,7 @@ resource "aws_lb_listener" "web_listener" {
   port              = 443
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
-  certificate_arn   = "arn:aws:acm:us-east-1:111111111111:certificate/01cec85c-1454-47a2-995f-f50db290a47f"
+  certificate_arn   = var.elastic_load_balancer_certificate_arn
 
   default_action {
     type             = "forward"
@@ -20,14 +20,15 @@ resource "aws_lb" "web_alb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
-  subnets            = data.terraform_remote_state.platform_deployment_state.outputs.public_subnets
+  subnets            = var.public_subnet_ids
 }
+
 
 resource "aws_lb_target_group" "web_tg" {
   name        = "web-tg"
   port        = 8080
   protocol    = "HTTP"
-  vpc_id      = data.terraform_remote_state.platform_deployment_state.outputs.vpc_id
+  vpc_id      = var.vpc_id
   target_type = "instance"
   health_check {
     path                = "/api/health"
@@ -55,7 +56,7 @@ resource "aws_launch_template" "backend-webserver" {
   }
   user_data = base64encode(<<-USERDATA
     #!/bin/bash
-    echo "ECS_CLUSTER=staging-cluster" >> /etc/ecs/ecs.config
+    echo "ECS_CLUSTER=main-cluster" >> /etc/ecs/ecs.config
   USERDATA
   )
 }
@@ -63,7 +64,7 @@ resource "aws_launch_template" "backend-webserver" {
 resource "aws_security_group" "alb_sg" {
   name        = "alb_sg"
   description = "Allow HTTP/HTTPS from Cloudflare"
-  vpc_id      = data.terraform_remote_state.platform_deployment_state.outputs.vpc_id
+  vpc_id      = var.vpc_id
   ingress {
     from_port   = 80
     to_port     = 80
@@ -88,7 +89,7 @@ data "cloudflare_ip_ranges" "cf" {}
 
 resource "aws_security_group" "ecs_instance_sg" {
   name   = "ecs-instance-sg"
-  vpc_id = data.terraform_remote_state.platform_deployment_state.outputs.vpc_id
+  vpc_id = var.vpc_id
   ingress {
     description     = "HTTP from ALB"
     from_port       = 8080
@@ -109,7 +110,7 @@ resource "aws_security_group_rule" "from_webserver_to_rds" {
   from_port                = 5432
   to_port                  = 5432
   protocol                 = "tcp"
-  security_group_id        = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_sg
+  security_group_id        = var.db_instance_sg
   source_security_group_id = aws_security_group.ecs_instance_sg.id
   description              = "Allow ECS tasks to access RDS"
   depends_on               = [module.ecs]

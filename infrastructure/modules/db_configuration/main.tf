@@ -1,19 +1,14 @@
 terraform {
+  backend "s3" {}
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = ">= 5.0.0, < 6.0.0"
     }
-
     postgresql = {
       source  = "cyrilgdn/postgresql"
       version = "~> 1.25"
     }
-  }
-  backend "s3" {
-    bucket = "terraform-backends193093"
-    key    = "db-configuration"
-    region = "us-east-1"
   }
   required_version = "~> 1.12.0"
 }
@@ -35,7 +30,7 @@ data "terraform_remote_state" "platform_deployment_state" {
 provider "postgresql" {
   host      = "localhost"
   port      = 15432
-  username  = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_username
+  username  = var.db_instance_username
   password  = data.aws_ssm_parameter.db_password.value
   database  = "postgres"
   sslmode   = "require"
@@ -54,7 +49,7 @@ resource "postgresql_role" "app_user" {
 
 resource "postgresql_grant" "app_user_connect" {
   depends_on  = [postgresql_role.app_user]
-  database    = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_name
+  database    = var.db_instance_name
   role        = local.app_user
   object_type = "database"
   privileges  = ["CONNECT"]
@@ -63,20 +58,18 @@ resource "postgresql_grant" "app_user_connect" {
 resource "postgresql_default_privileges" "app_user_tables" {
   depends_on  = [postgresql_role.app_user]
   role        = local.app_user
-  owner       = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_username
-  database    = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_name
+  owner       = var.db_instance_username
+  database    = var.db_instance_name
   schema      = "public"
   object_type = "table"
   privileges  = ["SELECT", "INSERT", "UPDATE"]
 }
 
-
-
 resource "postgresql_default_privileges" "app_user_sequences" {
   depends_on  = [postgresql_role.app_user]
-  owner       = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_username
+  owner       = var.db_instance_username
   role        = local.app_user
-  database    = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_name
+  database    = var.db_instance_name
   schema      = "public"
   object_type = "sequence"
   privileges  = ["USAGE", "SELECT"]

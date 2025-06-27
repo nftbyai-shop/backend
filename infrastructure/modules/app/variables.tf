@@ -1,8 +1,19 @@
 
+variable "environment_name" {
+  type    = string
+}
 
-##############################
-# Authentication / Auth0
-##############################
+variable "account_id" {
+  type    = string
+  default = "111111111111"
+}
+
+variable "region" {
+  description = "AWS region for resource deployment"
+  type        = string
+  default     = "us-east-1"
+}
+
 variable "auth0_domain" {
   description = "Auth0 tenant domain"
   type        = string
@@ -27,9 +38,6 @@ variable "auth0_algorithms" {
   default     = "RS256"
 }
 
-##############################
-# Front-end / Client
-##############################
 variable "ALLOW_ORIGINS_URLS" {
   description = "Public URL of the front-end SPA"
   type        = list(string)
@@ -37,14 +45,15 @@ variable "ALLOW_ORIGINS_URLS" {
 }
 
 variable "FRONTEND_URL" {
-  type        = string
-  default     = "http://staging.nftbyai.shop"
+  type    = string
+  default = "http://staging.nftbyai.shop"
 }
 
+variable "SUCCESSFULL_PURCHASE_URL" {
+  type    = string
+  default = "http://staging.nftbyai.shop/confirmation"
+}
 
-##############################
-# NFT service
-##############################
 variable "default_nft_owner" {
   description = "Default NFT owner identifier (scheme:user:chain)"
   type        = string
@@ -57,11 +66,40 @@ variable "nft_image_storage_url" {
   default     = "https://nfts-38029.s3.us-east-1.amazonaws.com"
 }
 
-##############################
-# General
-##############################
-variable "region" {
-  description = "AWS region for resource deployment"
-  type        = string
-  default     = "us-east-1"
+variable "elastic_load_balancer_certificate_arn" {
+  type    = string
+  default = "arn:aws:acm:us-east-1:111111111111:certificate/01cec85c-1454-47a2-995f-f50db290a47f"
+}
+
+
+variable "db_instance_address" {
+  type = string
+}
+
+variable "db_instance_port" {
+  type = string
+}
+variable "db_instance_name" {
+  type = string
+}
+
+variable "public_subnet_ids" {
+  type = list(string)
+}
+
+variable "db_instance_resource_id" {
+  type = string
+}
+
+variable "nfts_s3_bucket_name" {
+  type = string
+}
+variable "vpc_id" {
+  type = string
+}
+variable "db_instance_sg" {
+
+}
+
+variable "GPT_MODEL_1" {
 }

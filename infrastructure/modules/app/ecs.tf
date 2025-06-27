@@ -1,12 +1,12 @@
 module "ecs" {
   source       = "terraform-aws-modules/ecs/aws"
   version      = "~> 5.0"
-  cluster_name = "staging-cluster"
+  cluster_name = "main-cluster"
   cluster_configuration = {
     execute_command_configuration = {
       logging = "OVERRIDE"
       log_configuration = {
-        cloud_watch_log_group_name = "/aws/ecs/staging-cluster"
+        cloud_watch_log_group_name = "/aws/ecs/${var.environment_name}-cluster"
       }
     }
   }
@@ -34,22 +34,21 @@ module "ecs" {
     webserver_backend = {
       requires_compatibilities = ["EC2"]
       create_task_iam_role     = false
-      task_iam_role_arn        = aws_iam_role.fastapi_backend_task_role.arn
 
       network_mode = "host"
 
       desired_count = 1
       launch_type   = "EC2"
-      cpu           = 512
-      memory        = 512
+      cpu           = 800
+      memory        = 800
 
       deployment_minimum_healthy_percent = 100
       deployment_maximum_percent         = 200
 
       container_definitions = {
         webserver-backend = {
-          cpu                       = 512
-          memory                    = 512
+          cpu                       = 800
+          memory                    = 800
           essential                 = true
           image                     = "111111111111.dkr.ecr.us-east-1.amazonaws.com/backend:latest"
           port_mappings             = [{ containerPort = 8080, hostPort = 8080, protocol = "tcp" }]
@@ -69,21 +68,21 @@ module "ecs" {
             { name = "AUTH0_ALGORITHMS", value = var.auth0_algorithms },
             { name = "ALLOW_ORIGINS_URLS", value = jsonencode(var.ALLOW_ORIGINS_URLS) },
             { name = "DB_USER", value = "app_user" },
-            { name = "DB_HOST", value = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_address },
-            { name = "DB_PORT", value = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_port },
-            { name = "DB_NAME", value = data.terraform_remote_state.platform_deployment_state.outputs.db_instance_name },
-            { name = "CROSSMINT_API_KEY_SSM_PATH", value = "/staging/nft-producer-service/CROSSMINT_API_KEY" },
-            { name = "STRIPE_SECRET_KEY_SSM_PATH", value = "/staging/nft-producer-service/STRIPE_SECRET_KEY" },
-            { name = "STRIPE_WEBHOOK_SIGNING_SECRET_SSM_PATH", value = "/staging/nft-producer-service/STRIPE_WEBHOOK_SIGNING_SECRET" },
+            { name = "DB_HOST", value = var.db_instance_address },
+            { name = "DB_PORT", value = var.db_instance_port },
+            { name = "DB_NAME", value = var.db_instance_name },
+            { name = "CROSSMINT_API_KEY_SSM_PATH", value = "/${var.environment_name}/nft-producer-service/CROSSMINT_API_KEY" },
+            { name = "STRIPE_SECRET_KEY_SSM_PATH", value = "/${var.environment_name}/nft-producer-service/STRIPE_SECRET_KEY" },
+            { name = "STRIPE_WEBHOOK_SIGNING_SECRET_SSM_PATH", value = "/${var.environment_name}/nft-producer-service/STRIPE_WEBHOOK_SIGNING_SECRET" },
             { name = "NFTBYAI_WALLET_ADDRESS", value = "0xA45BB78a84eA17CA64876D89CeD76ff1E837e759" },
-            { name = "SMTP_PASS_SSM_PATH", value = "/staging/nft-producer-service/SMTP_PASS" },
+            { name = "SMTP_PASS_SSM_PATH", value = "/${var.environment_name}/nft-producer-service/SMTP_PASS" },
             { name = "SMTP_HOST", value = "smtp.gmail.com" },
             { name = "SMTP_PORT", value = 465 },
             { name = "SMTP_USER", value = "ops@example.com" },
             { name = "SMTP_PASS", value = "REDACTED_SMTP_PASSWORD" },
-            { name = "REPORT_TO_EMAIL", value = "alerts+staging3@gmail.com" },
-            { name = "SUCCESSFULL_PURCHASE_URL", value = "http://staging.nftbyai.shop/confirmation" },
-            { name = "FAILED_PURCHASE_URL", value = "http://staging.nftbyai.shop" },
+            { name = "REPORT_TO_EMAIL", value = "alerts+${var.environment_name}3@gmail.com" },
+            { name = "SUCCESSFULL_PURCHASE_URL", value = var.SUCCESSFULL_PURCHASE_URL },
+            { name = "FAILED_PURCHASE_URL", value = "http://${var.environment_name}.nftbyai.shop" },
             { name = "DEFAULT_NFT_OWNER", value = var.default_nft_owner },
             { name = "NFT_IMAGE_STORAGE_URL", value = var.nft_image_storage_url },
             { name = "REGION", value = var.region },
@@ -98,7 +97,7 @@ module "ecs" {
           container_port   = 8080
         }
       }
-      subnet_ids = data.terraform_remote_state.platform_deployment_state.outputs.public_subnets
+      subnet_ids = var.public_subnet_ids
       security_group_rules = {
         alb_ingress_8080 = {
           type                     = "ingress"
@@ -112,8 +111,6 @@ module "ecs" {
 
     }
   }
-
-  tags = { Environment = "staging", Project = "NFT-backend" }
 
   # Ensure underlying infra exists first
   depends_on = [
@@ -130,7 +127,7 @@ resource "aws_autoscaling_group" "ec2-asg" {
   max_size              = 1
   min_size              = 1
   desired_capacity      = 1
-  vpc_zone_identifier   = data.terraform_remote_state.platform_deployment_state.outputs.public_subnets
+  vpc_zone_identifier   = var.public_subnet_ids
   protect_from_scale_in = true
   launch_template {
     id      = aws_launch_template.backend-webserver.id
@@ -161,10 +158,6 @@ resource "aws_iam_role" "fastapi_backend_task_role" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "fastapi_backend_task_role_policy_attachment" {
-  role       = aws_iam_role.fastapi_backend_task_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
-}
 
 
 resource "aws_iam_role" "ecs_instance_role" {
@@ -197,6 +190,39 @@ resource "aws_iam_instance_profile" "backend_webserver_instance_profile" {
 
 resource "aws_iam_role_policy_attachment" "webserver_backend_task_role_attach" {
   role       = module.ecs.services["webserver_backend"].tasks_iam_role_name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+  policy_arn = aws_iam_policy.fastapi_backend_task_role_policy.arn
 }
 
+resource "aws_iam_policy" "fastapi_backend_task_role_policy" {
+  name = "fastapi_backend_task_role_policy"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        "Sid" : "SSMParameterReadAccess",
+        "Effect" : "Allow",
+        "Action" : [
+          "ssm:GetParameter",
+          "ssm:GetParameters",
+          "ssm:GetParametersByPath",
+          "ssm:DescribeParameters"
+        ],
+        "Resource" : [
+          "arn:aws:ssm:us-east-1:${var.account_id}:parameter/${var.environment_name}/nft-producer-service/CROSSMINT_API_KEY",
+          "arn:aws:ssm:us-east-1:${var.account_id}:parameter/${var.environment_name}/nft-producer-service/OPENAI_API_KEY",
+          "arn:aws:ssm:us-east-1:${var.account_id}:parameter/${var.environment_name}/nft-producer-service/SMTP_PASS",
+          "arn:aws:ssm:us-east-1:${var.account_id}:parameter/${var.environment_name}/nft-producer-service/STRIPE_SECRET_KEY",
+          "arn:aws:ssm:us-east-1:${var.account_id}:parameter/${var.environment_name}/nft-producer-service/STRIPE_WEBHOOK_SIGNING_SECRET",
+        ]
+
+      },
+      {
+        "Sid" : "RDSIAMAuthConnect",
+        "Effect" : "Allow",
+        "Action" : "rds-db:connect",
+        "Resource" : "arn:aws:rds-db:${var.region}:${var.account_id}:dbuser:${var.db_instance_resource_id}/app_user"
+      }
+
+    ]
+  })
+}

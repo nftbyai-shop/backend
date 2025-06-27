@@ -1,22 +1,18 @@
 terraform {
+  backend "s3" {}
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = ">= 5.0.0, < 6.0.0"
     }
     cloudflare = {
       source  = "cloudflare/cloudflare"
       version = "5.5.0"
     }
-
-  }
-  backend "s3" {
-    bucket = "terraform-backends193093"
-    key    = "staging/platform"
-    region = "us-east-1"
   }
   required_version = "~> 1.12.0"
 }
+
 
 provider "aws" {
   region = "us-east-1"
@@ -40,9 +36,6 @@ module "vpc" {
   intra_subnet_assign_ipv6_address_on_creation  = false
   private_subnet_enable_dns64                   = false
 
-  # public_subnet_ipv6_prefixes  = [0, 1, 2]
-  # private_subnet_ipv6_prefixes = [3, 4, 5]
-
 }
 
 resource "aws_default_security_group" "default" {
@@ -58,24 +51,15 @@ resource "aws_default_security_group" "default" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
-    # ipv6_cidr_blocks = ["::/0"]
   }
 }
 
-module "s3_bucket_lambdas_389239" {
-  source                   = "terraform-aws-modules/s3-bucket/aws"
-  bucket                   = "lambdas-389239"
-  force_destroy            = true
-  request_payer            = "BucketOwner"
-  control_object_ownership = true
-  object_ownership         = "BucketOwnerEnforced"
-  restrict_public_buckets  = true
-}
+data "aws_caller_identity" "current" {}
 
 
 module "s3_bucket_nfts_38029" {
   source                   = "terraform-aws-modules/s3-bucket/aws"
-  bucket                   = "nfts-38029"
+  bucket                   = var.nfts_storage_bucket_name
   force_destroy            = false
   request_payer            = "BucketOwner"
   control_object_ownership = true
@@ -117,11 +101,9 @@ resource "aws_s3_bucket_policy" "s3_bucket_nfts_38029_policy" {
   })
 }
 
-
-
 module "s3_bucket_staging_nftbyai_shop" {
   source                   = "terraform-aws-modules/s3-bucket/aws"
-  bucket                   = "staging.nftbyai.shop"
+  bucket                   = var.frontend_bucket_name
   force_destroy            = false
   request_payer            = "BucketOwner"
   control_object_ownership = true
@@ -132,6 +114,7 @@ module "s3_bucket_staging_nftbyai_shop" {
     enabled = true
   }
 }
+
 resource "aws_s3_bucket_website_configuration" "website_hosting" {
   bucket = module.s3_bucket_staging_nftbyai_shop.s3_bucket_id
   index_document {
@@ -185,7 +168,7 @@ resource "aws_s3_bucket_policy" "restrict_to_cloudflare" {
 
 module "trust_store_38220" {
   source                   = "terraform-aws-modules/s3-bucket/aws"
-  bucket                   = "trust-store-38220"
+  bucket                   = var.trust_store_bucket_name
   force_destroy            = false
   request_payer            = "BucketOwner"
   control_object_ownership = true
@@ -195,6 +178,7 @@ module "trust_store_38220" {
     enabled = true
   }
 }
+
 resource "aws_s3_bucket_policy" "allow_alb_access" {
   bucket = module.trust_store_38220.s3_bucket_id
 
@@ -214,15 +198,6 @@ resource "aws_s3_bucket_policy" "allow_alb_access" {
   })
 }
 
-
-
-resource "aws_lb_trust_store" "trust_store" {
-  name                             = "lb-trust-store"
-  ca_certificates_bundle_s3_bucket = module.trust_store_38220.s3_bucket_id
-  ca_certificates_bundle_s3_key    = "rootca.crt"
-}
-
-
 resource "aws_ecr_repository" "generate-nft" {
   name                 = "generate-nft"
   image_tag_mutability = "MUTABLE"
@@ -230,7 +205,6 @@ resource "aws_ecr_repository" "generate-nft" {
     scan_on_push = true
   }
 }
-
 
 resource "aws_ecr_repository" "backend" {
   name                 = "backend"

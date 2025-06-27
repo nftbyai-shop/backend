@@ -22,7 +22,7 @@ module "db" {
   subnet_ids                          = [module.vpc.private_subnets[0], module.vpc.private_subnets[1]]
   manage_master_user_password         = false
   vpc_security_group_ids              = [aws_security_group.rds_sg.id]
-  snapshot_identifier                 = "nftdb-snapshot"
+  snapshot_identifier                 = var.snapshot_identifier
 }
 
 resource "random_password" "db_password" {
