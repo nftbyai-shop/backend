@@ -1,4 +1,4 @@
-name: Build Generate-NFT container
+name: Push Generate-NFT To Staging
 
 on: 
   push:
