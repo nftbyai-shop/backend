@@ -34,9 +34,8 @@ class _TokenVerifier:
                 audience=self.config.auth0_api_audience,
                 issuer=self.config.auth0_issuer,
             )
-        except Exception as e:
-            print("we so much here")
-            raise HTTPException(403, detail=str(e))
+        except Exception:
+            raise HTTPException(403)
         return payload
 
 
