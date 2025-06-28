@@ -41,7 +41,7 @@ app.add_middleware(
 )
 
 
-limiter = Limiter(key_func=get_remote_address, default_limits=["1/second"])
+limiter = Limiter(key_func=get_remote_address, default_limits=["2/second"])
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)

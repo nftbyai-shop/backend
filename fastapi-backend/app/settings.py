@@ -7,7 +7,8 @@ logger = logging.getLogger()
 load_dotenv()
 
 class _Settings(BaseSettings):
-    auth0_domain: str
+    auth0_custom_domain: str
+    auth0_default_domain: str
     auth0_api_audience: str
     auth0_issuer: str
     auth0_algorithms: str

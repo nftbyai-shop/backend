@@ -11,7 +11,7 @@ from app.settings import get_settings
 class _TokenVerifier:
     def __init__(self) -> None:
         self.config = get_settings()
-        jwks_url: str = f"{self.config.auth0_domain}/.well-known/jwks.json"
+        jwks_url: str = f"{self.config.auth0_default_domain}/.well-known/jwks.json"
         self.jwks_client = jwt.PyJWKClient(jwks_url)
 
     # TODO: get_signing_key_from_jwt is an event loop blocking call
@@ -35,7 +35,8 @@ class _TokenVerifier:
                 issuer=self.config.auth0_issuer,
             )
         except Exception as e:
-            raise HTTPException(403, )
+            print("we so much here")
+            raise HTTPException(403, detail=str(e))
         return payload
 
 
