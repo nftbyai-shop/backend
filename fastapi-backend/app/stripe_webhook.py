@@ -92,6 +92,9 @@ async def fulfill_checkout(session_id: str, user_email: str) -> None:
                 "Couldn't find an nft in the database with s3_object_name = "
                 + s3_product_id
             )
+        if not product_nft.available_for_sale:
+            raise RuntimeError(f"CRITICAL ERROR, NFT THAT IS NOT AVAILABLE IS REQUESTED IN FULLFILL_CHECKOUT FUNCTION!!!! NFT_DB_ID:{product_nft.id} NFT_S3_ID:{product_nft.s3_object_name}")
+        
         product_nft.available_for_sale = False
         await db_session.commit()
 

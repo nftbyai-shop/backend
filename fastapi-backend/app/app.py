@@ -114,13 +114,6 @@ async def health_check():
     return HTTPResponse(status=200, reason="OK")
 
 
-@app.get("/api/private")
-def private(access_allowed: str = Security(verify_token)) -> dict[Any, Any]:
-    if access_allowed:
-        return {"access": "allowed"}
-    else:
-        raise HTTPException(403, "Unauthoriseed")
-
 
 if __name__ == "__main__":
     uvicorn.run(app=app, port=8000, log_level="debug")
