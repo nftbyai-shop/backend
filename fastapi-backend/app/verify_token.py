@@ -21,6 +21,7 @@ class _TokenVerifier:
         token: Optional[HTTPAuthorizationCredentials],
         security_scopes: SecurityScopes,
     ) -> dict[str, Any]:
+        print(token)
         if token is None:
             raise HTTPException(401, detail="Token is missing")
         try:
