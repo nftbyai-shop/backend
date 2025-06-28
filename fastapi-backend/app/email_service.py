@@ -13,7 +13,7 @@ settings = get_settings()
 
 
 async def async_send_email(
-    content: str, subject: str = "From fastapi-backend", to=settings.REPORT_TO_EMAIL
+    content: str, subject: str = f"From {settings.environment} fastapi-backend", to=settings.REPORT_TO_EMAIL
 ):
     await asyncio.to_thread(_send_email, content, subject, to)
 

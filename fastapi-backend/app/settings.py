@@ -12,6 +12,7 @@ class _Settings(BaseSettings):
     auth0_api_audience: str
     auth0_issuer: str
     auth0_algorithms: str
+    environment: str
     ALLOW_ORIGINS_URLS: list[str]
     DB_USER: str
     DB_PASS: str | None = None
