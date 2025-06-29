@@ -38,7 +38,7 @@ class _Settings(BaseSettings):
     SMTP_HOST: str
     SMTP_PORT: str
     SMTP_USER: str
-    SMTP_PASS: str
+    SMTP_PASS: str = ""
     REPORT_TO_EMAIL: str
 
 
