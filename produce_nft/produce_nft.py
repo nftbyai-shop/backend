@@ -36,6 +36,7 @@ DB_HOST: str = os.environ["DB_HOST"]
 DB_NAME: str = os.environ["DB_NAME"]
 DB_PORT = 5432
 REGION: str = os.environ["REGION"]
+ENVIRONMENT: str = os.environ["ENVIRONMENT"]
 REQUIRE_SSL: bool = os.environ.get("REQUIRE_SSL", "true").lower() == "true"
 rds = boto3.client("rds", region_name=REGION)
 
@@ -181,8 +182,10 @@ def main():
             "X-API-KEY": CROSSMINT_API_KEY,
             "Content-Type": "application/json",
         }
-
-        crossmint_mint_url: str = f"https://staging.crossmint.com/api/2022-06-09/collections/{COLLECTION_ID}/nfts"
+        if ENVIRONMENT == "production":
+            crossmint_mint_url: str = f"https://www.crossmint.com/api/2022-06-09/collections/{COLLECTION_ID}/nfts"
+        else:
+            crossmint_mint_url: str = f"https://staging.crossmint.com/api/2022-06-09/collections/{COLLECTION_ID}/nfts"
         response: requests.Response = fetch(
             "POST", crossmint_mint_url, json=payload, headers=headers
         )
@@ -194,7 +197,10 @@ def main():
         crossmint_id: str = response_json["id"]
 
         # Get mint status
-        crossmint_mint_status_url = f"https://staging.crossmint.com/api/2022-06-09/collections/{COLLECTION_ID}/nfts/{crossmint_id}"
+        if ENVIRONMENT == "production":
+            crossmint_mint_status_url = f"https://www.crossmint.com/api/2022-06-09/collections/{COLLECTION_ID}/nfts/{crossmint_id}"    
+        else:
+            crossmint_mint_status_url = f"https://staging.crossmint.com/api/2022-06-09/collections/{COLLECTION_ID}/nfts/{crossmint_id}"
         cid = None
         token_id: str | None = None
         attempt = 0
