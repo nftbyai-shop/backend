@@ -41,7 +41,6 @@ REQUIRE_SSL: bool = os.environ.get("REQUIRE_SSL", "true").lower() == "true"
 rds = boto3.client("rds", region_name=REGION)
 
 
-
 ssm = boto3.client(
     "ssm",
     config=boto3.session.Config(
@@ -84,7 +83,7 @@ def main():
         image_idea_prompt: Any = [
             {
                 "role": "developer",
-                "content": "Don't provide any follow-up suggestions. Just clear response.",
+                "content": "Don't provide any follow-up suggestions. Just clear response.",  # maybe add later:DON'T include: violin.
             },
             {
                 "role": "user",
@@ -198,13 +197,13 @@ def main():
 
         # Get mint status
         if ENVIRONMENT == "production":
-            crossmint_mint_status_url = f"https://www.crossmint.com/api/2022-06-09/collections/{COLLECTION_ID}/nfts/{crossmint_id}"    
+            crossmint_mint_status_url = f"https://www.crossmint.com/api/2022-06-09/collections/{COLLECTION_ID}/nfts/{crossmint_id}"
         else:
             crossmint_mint_status_url = f"https://staging.crossmint.com/api/2022-06-09/collections/{COLLECTION_ID}/nfts/{crossmint_id}"
         cid = None
         token_id: str | None = None
         attempt = 0
-        while not cid and attempt < 6:
+        while not cid and attempt < 12:
             try:
                 response: requests.Response = fetch(
                     "GET",
@@ -239,8 +238,7 @@ def main():
             product="prod_" + image_s3_key,
             lookup_key="price_" + image_s3_key,
         )
-        
-        
+
         nft = Nft(
             timestamp=datetime.datetime.now(),
             name=image_title,
@@ -269,8 +267,8 @@ def main():
 
         engine: Engine = create_engine(
             f"postgresql+psycopg://{DB_USER}:{db_pass}@{DB_HOST}/{DB_NAME}{('?sslmode=require' if REQUIRE_SSL else '')}",
-            pool_pre_ping=True, 
-        )        
+            pool_pre_ping=True,
+        )
 
         with Session(engine) as session:
             session.add(nft)
