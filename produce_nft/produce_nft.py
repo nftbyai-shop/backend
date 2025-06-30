@@ -87,7 +87,7 @@ def main():
             },
             {
                 "role": "user",
-                "content": 'Give me a sick, positive, random and "not-AI-like" idea for an image in PHOTOREALISM style.',
+                "content": 'Give me a unique, random and "NOT-AI-like" idea for an image in PHOTOREALISM style.',
             },
         ]
         completion: ChatCompletion = client.chat.completions.create(
@@ -268,6 +268,7 @@ def main():
         engine: Engine = create_engine(
             f"postgresql+psycopg://{DB_USER}:{db_pass}@{DB_HOST}/{DB_NAME}{('?sslmode=require' if REQUIRE_SSL else '')}",
             pool_pre_ping=True,
+            echo=True,
         )
 
         with Session(engine) as session:
