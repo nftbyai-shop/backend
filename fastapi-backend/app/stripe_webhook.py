@@ -12,7 +12,7 @@ from pg8000 import IntegrityError
 from sqlalchemy import select
 
 from app.db_connection import get_async_sessionmaker
-from app.email_service import async_send_email
+from app.email_service import async_send_email, send_confirmation_email_text
 from app.helper import async_fetch_with_retry
 from app.models import CheckoutFulfillment, Nft
 from app.settings import get_settings
@@ -54,7 +54,12 @@ async def stripe_webhook(
             email_content = f"Couldn't fulfill the order, session_id: {event['data']['object']['id']}\n"
             email_content += "Event object: \n" + str(event) + "\n\n"
             email_content += "Traceback: \n" + traceback.format_exc()
-            await async_send_email(content=email_content)
+            await async_send_email(
+                from_address=get_settings().SMTP_USER,
+                to_addres=get_settings().REPORT_TO_EMAIL,
+                content=email_content,
+                subject=f"From {get_settings().environment} fastapi-backend",
+            )
             raise e
         return {"status": "fulfilled", "status_code": "200"}
     return {"status_code": "200"}
@@ -93,8 +98,10 @@ async def fulfill_checkout(session_id: str, user_email: str) -> None:
                 + s3_product_id
             )
         if not product_nft.available_for_sale:
-            raise RuntimeError(f"CRITICAL ERROR, NFT THAT IS NOT AVAILABLE IS REQUESTED IN FULLFILL_CHECKOUT FUNCTION!!!! NFT_DB_ID:{product_nft.id} NFT_S3_ID:{product_nft.s3_object_name}")
-        
+            raise RuntimeError(
+                f"CRITICAL ERROR, NFT THAT IS NOT AVAILABLE IS REQUESTED IN FULLFILL_CHECKOUT FUNCTION!!!! NFT_DB_ID:{product_nft.id} NFT_S3_ID:{product_nft.s3_object_name}"
+            )
+
         product_nft.available_for_sale = False
         await db_session.commit()
 
@@ -103,10 +110,14 @@ async def fulfill_checkout(session_id: str, user_email: str) -> None:
             "type": "evm-smart-wallet",
             "linkedUser": f"email:{user_email}",
         }
+        if settings.environment == "production":
+            wallets_url = "https://www.crossmint.com/api/2022-06-09/wallets"
+        else:
+            wallets_url = "https://staging.crossmint.com/api/2022-06-09/wallets"
 
         create_wallet_response: Response = await async_fetch_with_retry(
             method="POST",
-            url="https://staging.crossmint.com/api/2022-06-09/wallets",
+            url=wallets_url,
             headers={
                 "X-API-KEY": settings.CROSSMINT_SECRET_KEY,
                 "Content-Type": "application/json",
@@ -136,7 +147,10 @@ async def fulfill_checkout(session_id: str, user_email: str) -> None:
         data = selector + encoded_params
         print(f"0x{HexBytes(data).hex()}")
         # send transaction
-        transfer_nft_url = f"https://staging.crossmint.com/api/2022-06-09/wallets/{settings.NFTBYAI_WALLET_ADDRESS}/transactions"
+        if settings.environment == "production":
+            transfer_nft_url = f"https://www.crossmint.com/api/2022-06-09/wallets/{settings.NFTBYAI_WALLET_ADDRESS}/transactions"
+        else:
+            transfer_nft_url = f"https://staging.crossmint.com/api/2022-06-09/wallets/{settings.NFTBYAI_WALLET_ADDRESS}/transactions"
 
         headers = {
             "Content-Type": "application/json",
@@ -161,3 +175,15 @@ async def fulfill_checkout(session_id: str, user_email: str) -> None:
         transfer_nft_response.raise_for_status()
         product_nft.owner = "email:" + user_email + ":polygon"
         await db_session.commit()
+
+        if settings.environment == "production":
+            crossmint_user_wallet_sign_in_url = (
+                "https://www.crossmint.com/user/collection"
+            )
+        else:
+            crossmint_user_wallet_sign_in_url = (
+                "https://staging.crossmint.com/user/collection"
+            )
+        await send_confirmation_email_text(
+            crossmint_user_wallet_sign_in_url, user_email=user_email
+        )

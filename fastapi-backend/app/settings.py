@@ -1,10 +1,12 @@
+import logging
+
+import boto3
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
-import boto3
-import logging
 
 logger = logging.getLogger()
 load_dotenv()
+
 
 class _Settings(BaseSettings):
     auth0_custom_domain: str
@@ -31,7 +33,6 @@ class _Settings(BaseSettings):
     STRIPE_SECRET_KEY_SSM_PATH: str = ""
     STRIPE_WEBHOOK_SIGNING_SECRET: str = ""
     STRIPE_WEBHOOK_SIGNING_SECRET_SSM_PATH: str = ""
-    SMTP_PASS_SSM_PATH: str = ''
     REGION: str
     LOG_LEVEL: str = "DEBUG"
     NFTBYAI_WALLET_ADDRESS: str
@@ -39,6 +40,13 @@ class _Settings(BaseSettings):
     SMTP_PORT: str
     SMTP_USER: str
     SMTP_PASS: str = ""
+    SMTP_PASS_SSM_PATH: str = ""
+    SMTP_NFTBYAI_HOST: str = "smtp.zohocloud.ca"
+    SMTP_NFTBYAI_PORT: str = "465"
+    SMTP_NFTBYAI_USER: str = "support@nftbyai.shop"
+    SMTP_NFTBYAI_PASS: str = ""
+    SMTP_NFTBYAI_PASS_SSM_PATH: str = ""
+
     REPORT_TO_EMAIL: str
 
 
@@ -47,8 +55,10 @@ Settings = _Settings
 
 _settings = _Settings()
 
+
 def get_settings() -> Settings:
     return _settings
+
 
 logger = logging.getLogger()
 logger.setLevel(_settings.LOG_LEVEL)
@@ -62,27 +72,32 @@ ssm = boto3.client(
 )
 
 if not _settings.CROSSMINT_SECRET_KEY:
-    logger.debug("CROSSMINT_API_KEY_SSM_PATH: ", _settings.CROSSMINT_API_KEY_SSM_PATH) 
+    logger.debug("CROSSMINT_API_KEY_SSM_PATH: ", _settings.CROSSMINT_API_KEY_SSM_PATH)
     CROSSMINT_API_KEY: str = ssm.get_parameter(
-    Name=_settings.CROSSMINT_API_KEY_SSM_PATH, WithDecryption=True
-)["Parameter"]["Value"]
+        Name=_settings.CROSSMINT_API_KEY_SSM_PATH, WithDecryption=True
+    )["Parameter"]["Value"]
     _settings.CROSSMINT_SECRET_KEY = CROSSMINT_API_KEY
 
 if not _settings.STRIPE_SECRET_KEY:
     STRIPE_API_KEY: str = ssm.get_parameter(
-    Name=_settings.STRIPE_SECRET_KEY_SSM_PATH, WithDecryption=True
-)["Parameter"]["Value"]
+        Name=_settings.STRIPE_SECRET_KEY_SSM_PATH, WithDecryption=True
+    )["Parameter"]["Value"]
     _settings.STRIPE_SECRET_KEY = STRIPE_API_KEY
 
 if not _settings.SMTP_PASS:
     smtp_pass: str = ssm.get_parameter(
-    Name=_settings.SMTP_PASS_SSM_PATH, WithDecryption=True
-)["Parameter"]["Value"]
+        Name=_settings.SMTP_PASS_SSM_PATH, WithDecryption=True
+    )["Parameter"]["Value"]
     _settings.SMTP_PASS = smtp_pass
 
+if not _settings.SMTP_NFTBYAI_PASS:
+    smtp_pass_nftbyai: str = ssm.get_parameter(
+        Name=_settings.SMTP_PASS_SSM_PATH, WithDecryption=True
+    )["Parameter"]["Value"]
+    _settings.SMTP_NFTBYAI_PASS = smtp_pass_nftbyai
 
 if not _settings.STRIPE_WEBHOOK_SIGNING_SECRET:
     stripe_webhook_signing_secret: str = ssm.get_parameter(
-    Name=_settings.STRIPE_WEBHOOK_SIGNING_SECRET_SSM_PATH, WithDecryption=True
-)["Parameter"]["Value"]
+        Name=_settings.STRIPE_WEBHOOK_SIGNING_SECRET_SSM_PATH, WithDecryption=True
+    )["Parameter"]["Value"]
     _settings.STRIPE_WEBHOOK_SIGNING_SECRET = stripe_webhook_signing_secret
