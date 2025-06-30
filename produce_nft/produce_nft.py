@@ -203,7 +203,7 @@ def main():
         cid = None
         token_id: str | None = None
         attempt = 0
-        while not cid and attempt < 12:
+        while not cid and attempt < 24:
             try:
                 response: requests.Response = fetch(
                     "GET",
