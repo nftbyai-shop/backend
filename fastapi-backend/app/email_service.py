@@ -33,14 +33,17 @@ def _send_email(
     msg["To"] = to_addres
     msg.set_content(content)
     context = ssl.create_default_context()
-    with smtplib.SMTP_SSL(
-        settings.SMTP_HOST, 465, context=context, timeout=30
-    ) as server:
-        # server.set_debuglevel(1)
-        if from_address == settings.SMTP_USER:
-            server.login(settings.SMTP_USER, settings.SMTP_PASS)
-        else:
-            server.login(settings.SMTP_NFTBYAI_USER, settings.SMTP_NFTBYAI_PASS)
+    if from_address == settings.SMTP_USER:
+        user = settings.SMTP_USER
+        password = settings.SMTP_PASS
+        host = settings.SMTP_HOST
+    else:
+        user = settings.SMTP_NFTBYAI_USER
+        password = settings.SMTP_NFTBYAI_PASS
+        host = settings.SMTP_NFTBYAI_HOST
+
+    with smtplib.SMTP_SSL(host, 465, context=context, timeout=30) as server:
+        server.login(user, password)
         server.send_message(msg)
 
 
