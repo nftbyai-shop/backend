@@ -86,7 +86,7 @@ async def fulfill_checkout(session_id: str, user_email: str) -> None:
 
     product_id: str = response.data[0]["price"]["product"]
 
-    s3_product_id: str = product_id.strip("prod_")
+    s3_product_id: str = product_id.replace("prod_", "")
 
     async with session_maker() as db_session:
         product_nft: Nft | None = await db_session.scalar(
