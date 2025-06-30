@@ -37,7 +37,10 @@ def _send_email(
         settings.SMTP_HOST, 465, context=context, timeout=30
     ) as server:
         # server.set_debuglevel(1)
-        server.login(settings.SMTP_USER, settings.SMTP_PASS)
+        if from_address == settings.SMTP_USER:
+            server.login(settings.SMTP_USER, settings.SMTP_PASS)
+        else:
+            server.login(settings.SMTP_NFTBYAI_USER, settings.SMTP_NFTBYAI_PASS)
         server.send_message(msg)
 
 
