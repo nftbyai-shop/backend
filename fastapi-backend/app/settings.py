@@ -92,7 +92,7 @@ if not _settings.SMTP_PASS:
 
 if not _settings.SMTP_NFTBYAI_PASS:
     smtp_pass_nftbyai: str = ssm.get_parameter(
-        Name=_settings.SMTP_PASS_SSM_PATH, WithDecryption=True
+        Name=_settings.SMTP_NFTBYAI_PASS_SSM_PATH, WithDecryption=True
     )["Parameter"]["Value"]
     _settings.SMTP_NFTBYAI_PASS = smtp_pass_nftbyai
 
