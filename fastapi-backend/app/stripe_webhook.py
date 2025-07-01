@@ -158,13 +158,18 @@ async def fulfill_checkout(session_id: str, user_email: str) -> None:
             "x-idempotency-key": session_id,
         }
 
+        if get_settings().environment == "production":
+            chain = "polygon"
+        else:
+            chain = "polygon-amoy"
+            
         data = {
             "params": {
                 "call": {
                     "to": product_nft.contract_address,
                     "data": "0x" + data.hex(),
                 },
-                "chain": "polygon-amoy",
+                "chain": chain,
             }
         }
         transfer_nft_response = await async_fetch_with_retry(
