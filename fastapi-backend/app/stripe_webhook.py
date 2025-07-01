@@ -162,11 +162,12 @@ async def fulfill_checkout(session_id: str, user_email: str) -> None:
             chain = "polygon"
         else:
             chain = "polygon-amoy"
-            
+
         data = {
             "params": {
-                "call": {
+                "calls": {
                     "to": product_nft.contract_address,
+                    "value": "0",
                     "data": "0x" + data.hex(),
                 },
                 "chain": chain,
