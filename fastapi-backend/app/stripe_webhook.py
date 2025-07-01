@@ -165,9 +165,8 @@ async def fulfill_checkout(session_id: str, user_email: str) -> None:
 
         data = {
             "params": {
-                "calls": {
+                "call": {
                     "to": product_nft.contract_address,
-                    "value": "0",
                     "data": "0x" + data.hex(),
                 },
                 "chain": chain,
