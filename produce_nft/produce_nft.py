@@ -68,7 +68,7 @@ STRIPE_SECRET_KEY_SSM_PATH: str = os.environ["STRIPE_SECRET_KEY_SSM_PATH"]
 STRIPE_SECRET_KEY: str = ssm.get_parameter(
     Name=STRIPE_SECRET_KEY_SSM_PATH, WithDecryption=True
 )["Parameter"]["Value"]
-
+PRICE_IN_CENTS = int(os.environ["PRICE_IN_CENTS"])
 stripe.api_key = STRIPE_SECRET_KEY
 json_logging.init_non_web(enable_json=True)
 logger: logging.Logger = logging.getLogger("nft-producer-service")
@@ -234,7 +234,7 @@ def main():
 
         stripe.Price.create(
             currency="cad",
-            unit_amount=500,
+            unit_amount=PRICE_IN_CENTS,
             product="prod_" + image_s3_key,
             lookup_key="price_" + image_s3_key,
         )
