@@ -87,7 +87,7 @@ def main():
             },
             {
                 "role": "user",
-                "content": 'Give me a unique, random and "NOT-AI-like" idea for an image in PHOTOREALISM style.',
+                "content": 'Give me a sick, positive, random and "not-AI-like" idea for an image in PHOTOREALISM style.',
             },
         ]
         completion: ChatCompletion = client.chat.completions.create(
