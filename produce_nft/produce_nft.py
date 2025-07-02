@@ -83,7 +83,7 @@ def main():
         image_idea_prompt: Any = [
             {
                 "role": "developer",
-                "content": "Don't provide any follow-up suggestions. Just clear response.",  # maybe add later:DON'T include: violin.
+                "content": "Don't provide any follow-up suggestions. Just clear response. EXCLUDE: violin",
             },
             {
                 "role": "user",
