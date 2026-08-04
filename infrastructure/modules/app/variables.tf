@@ -1,11 +1,10 @@
 
 variable "environment_name" {
-  type    = string
+  type = string
 }
 
 variable "account_id" {
-  type    = string
-  default = "111111111111"
+  type = string
 }
 
 variable "region" {
@@ -14,22 +13,19 @@ variable "region" {
   default     = "us-east-1"
 }
 
-variable "auth0_domain" {
-  description = "Auth0 tenant domain"
-  type        = string
-  default     = "https://dev-4zljthbwh3wy24vx.us.auth0.com"
+variable "auth0_custom_domain" {
+}
+variable "auth0_default_domain" {
 }
 
 variable "auth0_issuer" {
   description = "Auth0 issuer URL"
   type        = string
-  default     = "https://dev-4zljthbwh3wy24vx.us.auth0.com/"
 }
 
 variable "auth0_api_audience" {
   description = "Identifier of the API registered in Auth0"
   type        = string
-  default     = "https://staging.nftbyai.shop/api"
 }
 
 variable "auth0_algorithms" {
@@ -53,11 +49,21 @@ variable "SUCCESSFULL_PURCHASE_URL" {
   type    = string
   default = "http://staging.nftbyai.shop/confirmation"
 }
+variable "FAILED_PURCHASE_URL" {
+}
+
+variable "PRICE_IN_CENTS" {
+}
 
 variable "default_nft_owner" {
   description = "Default NFT owner identifier (scheme:user:chain)"
   type        = string
   default     = "email:owner@example.com:polygon"
+}
+variable "NFTBYAI_WALLET_ADDRESS" {
+}
+
+variable "COLLECTION_ID" {
 }
 
 variable "nft_image_storage_url" {

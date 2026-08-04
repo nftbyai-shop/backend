@@ -1,6 +1,5 @@
 module "ecs" {
   source       = "terraform-aws-modules/ecs/aws"
-  version      = "~> 5.0"
   cluster_name = "main-cluster"
   cluster_configuration = {
     execute_command_configuration = {
@@ -50,7 +49,7 @@ module "ecs" {
           cpu                       = 800
           memory                    = 800
           essential                 = true
-          image                     = "111111111111.dkr.ecr.us-east-1.amazonaws.com/backend:latest"
+          image                     = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/backend:latest"
           port_mappings             = [{ containerPort = 8080, hostPort = 8080, protocol = "tcp" }]
           enable_cloudwatch_logging = true
           log_configuration = {
@@ -62,11 +61,13 @@ module "ecs" {
             }
           }
           environment = [
-            { name = "AUTH0_DOMAIN", value = var.auth0_domain },
+            { name = "auth0_custom_domain", value = var.auth0_custom_domain },
+            { name = "auth0_default_domain", value = var.auth0_default_domain },
             { name = "AUTH0_ISSUER", value = var.auth0_issuer },
             { name = "AUTH0_API_AUDIENCE", value = var.auth0_api_audience },
             { name = "AUTH0_ALGORITHMS", value = var.auth0_algorithms },
             { name = "ALLOW_ORIGINS_URLS", value = jsonencode(var.ALLOW_ORIGINS_URLS) },
+            { name = "environment", value = var.environment_name },
             { name = "DB_USER", value = "app_user" },
             { name = "DB_HOST", value = var.db_instance_address },
             { name = "DB_PORT", value = var.db_instance_port },
@@ -74,19 +75,21 @@ module "ecs" {
             { name = "CROSSMINT_API_KEY_SSM_PATH", value = "/${var.environment_name}/nft-producer-service/CROSSMINT_API_KEY" },
             { name = "STRIPE_SECRET_KEY_SSM_PATH", value = "/${var.environment_name}/nft-producer-service/STRIPE_SECRET_KEY" },
             { name = "STRIPE_WEBHOOK_SIGNING_SECRET_SSM_PATH", value = "/${var.environment_name}/nft-producer-service/STRIPE_WEBHOOK_SIGNING_SECRET" },
-            { name = "NFTBYAI_WALLET_ADDRESS", value = "0xA45BB78a84eA17CA64876D89CeD76ff1E837e759" },
+            { name = "PRICE_IN_CENTS", value = var.PRICE_IN_CENTS },
+            { name = "NFTBYAI_WALLET_ADDRESS", value = var.NFTBYAI_WALLET_ADDRESS },
             { name = "SMTP_PASS_SSM_PATH", value = "/${var.environment_name}/nft-producer-service/SMTP_PASS" },
+            { name = "SMTP_NFTBYAI_PASS_SSM_PATH", value = "/${var.environment_name}/nft-producer-service/SMTP_NFTBYAI_PASS" },
             { name = "SMTP_HOST", value = "smtp.gmail.com" },
             { name = "SMTP_PORT", value = 465 },
             { name = "SMTP_USER", value = "ops@example.com" },
-            { name = "SMTP_PASS", value = "REDACTED_SMTP_PASSWORD" },
             { name = "REPORT_TO_EMAIL", value = "alerts+${var.environment_name}3@gmail.com" },
             { name = "SUCCESSFULL_PURCHASE_URL", value = var.SUCCESSFULL_PURCHASE_URL },
-            { name = "FAILED_PURCHASE_URL", value = "http://${var.environment_name}.nftbyai.shop" },
+            { name = "FAILED_PURCHASE_URL", value = var.FAILED_PURCHASE_URL },
             { name = "DEFAULT_NFT_OWNER", value = var.default_nft_owner },
             { name = "NFT_IMAGE_STORAGE_URL", value = var.nft_image_storage_url },
             { name = "REGION", value = var.region },
             { name = "FRONTEND_URL", value = var.FRONTEND_URL },
+
           ]
         }
       }
@@ -213,8 +216,8 @@ resource "aws_iam_policy" "fastapi_backend_task_role_policy" {
           "arn:aws:ssm:us-east-1:${var.account_id}:parameter/${var.environment_name}/nft-producer-service/SMTP_PASS",
           "arn:aws:ssm:us-east-1:${var.account_id}:parameter/${var.environment_name}/nft-producer-service/STRIPE_SECRET_KEY",
           "arn:aws:ssm:us-east-1:${var.account_id}:parameter/${var.environment_name}/nft-producer-service/STRIPE_WEBHOOK_SIGNING_SECRET",
+          "arn:aws:ssm:us-east-1:${var.account_id}:parameter/${var.environment_name}/nft-producer-service/SMTP_NFTBYAI_PASS",
         ]
-
       },
       {
         "Sid" : "RDSIAMAuthConnect",

@@ -1,8 +1,19 @@
 {
   "folders": [
-    { "path": "fastapi-backend" },
-    { "path": "produce_nft" },
-    { "path": "infrastructure" },
-    { "path": "shared" },
+    {
+      "path": "fastapi-backend"
+    },
+    {
+      "path": "produce_nft"
+    },
+    {
+      "path": "infrastructure"
+    },
+    {
+      "path": "shared"
+    },
+    {
+      "path": "../frontend"
+    }
   ]
 }

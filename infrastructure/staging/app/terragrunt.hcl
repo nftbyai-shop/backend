@@ -20,8 +20,9 @@ inputs = {
   account_id               = local.envs.locals.account_id
   region                   = local.envs.locals.aws_region
 
-  auth0_domain             = "https://dev-4zljthbwh3wy24vx.us.auth0.com"
-  auth0_issuer             = "https://dev-4zljthbwh3wy24vx.us.auth0.com/"
+  auth0_custom_domain             = "https://staging-auth.nftbyai.shop"
+  auth0_default_domain            = "https://dev-4zljthbwh3wy24vx.us.auth0.com"
+  auth0_issuer             = "https://staging-auth.nftbyai.shop/"
   auth0_api_audience       = "https://staging.nftbyai.shop/api"
   auth0_algorithms         = ["RS256"]
 
@@ -29,16 +30,22 @@ inputs = {
     "http://staging.nftbyai.shop",
     "https://staging.nftbyai.shop",
     "http://staging-api.nftbyai.shop",
-    "https://staging-api.nftbyai.shop",
+    "https://staging-api.nftbyai.shop"
   ]
 
   FRONTEND_URL             = "http://staging.nftbyai.shop"
   SUCCESSFULL_PURCHASE_URL = "http://staging.nftbyai.shop/confirmation"
+  FAILED_PURCHASE_URL       = "http://staging.nftbyai.shop"
 
   GPT_MODEL_1 = "gpt-4.1-mini"
   default_nft_owner                = "email:owner@example.com:polygon"
   nft_image_storage_url            = "https://nfts-${local.envs.locals.account_id}.s3.us-east-1.amazonaws.com"
+  COLLECTION_ID                    = "2f36274e-3463-49c1-9ee4-a01205674540"
   elastic_load_balancer_certificate_arn = "arn:aws:acm:us-east-1:111111111111:certificate/01cec85c-1454-47a2-995f-f50db290a47f"
+
+  NFTBYAI_WALLET_ADDRESS ="0xA45BB78a84eA17CA64876D89CeD76ff1E837e759"
+  PRICE_IN_CENTS = 500
+
 
   db_instance_address       = dependency.platform.outputs.db_instance_address
   db_instance_port          = dependency.platform.outputs.db_instance_port

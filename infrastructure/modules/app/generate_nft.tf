@@ -29,15 +29,16 @@ resource "aws_ecs_task_definition" "generate_nft" {
         { name = "CROSSMINT_API_KEY_SSM_PATH", value = "/${var.environment_name}/nft-producer-service/CROSSMINT_API_KEY" },
         { name = "OPENAI_API_KEY_SSM_PATH", value = "/${var.environment_name}/nft-producer-service/OPENAI_API_KEY" },
         { name = "STRIPE_SECRET_KEY_SSM_PATH", value = "/${var.environment_name}/nft-producer-service/STRIPE_SECRET_KEY" },
-        { name = "COLLECTION_ID", value = "2f36274e-3463-49c1-9ee4-a01205674540" },
+        { name = "COLLECTION_ID", value = var.COLLECTION_ID },
         { name = "GPT_MODEL_1", value = var.GPT_MODEL_1 },
         { name = "IMAGE_GEN_MODEL", value = "gpt-image-1" },
         { name = "NFT_RECIPIENT", value = "email:owner@example.com:polygon" },
+        { name = "PRICE_IN_CENTS", value = var.PRICE_IN_CENTS },
         { name = "S3_BUCKET", value = var.nfts_s3_bucket_name },
         { name = "LOG_LEVEL", value = "DEBUG" },
         { name = "IMAGE_SIZE", value = "1024x1536" },
-        { name = "IMAGE_QUALITY", value = "high" }
-
+        { name = "IMAGE_QUALITY", value = "high" },
+        { name = "ENVIRONMENT", value = var.environment_name }
       ]
       logConfiguration = {
         logDriver = "awslogs"

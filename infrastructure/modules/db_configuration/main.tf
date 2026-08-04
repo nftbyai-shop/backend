@@ -3,7 +3,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 5.0.0, < 6.0.0"
+      version = ">= 5.0.0"
     }
     postgresql = {
       source  = "cyrilgdn/postgresql"
@@ -16,15 +16,6 @@ terraform {
 data "aws_ssm_parameter" "db_password" {
   name            = "db_password"
   with_decryption = true
-}
-
-data "terraform_remote_state" "platform_deployment_state" {
-  backend = "s3"
-  config = {
-    bucket = "terraform-backends193093"
-    key    = "staging/platform"
-    region = "us-east-1"
-  }
 }
 
 provider "postgresql" {
