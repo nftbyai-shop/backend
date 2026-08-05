@@ -14,4 +14,5 @@ inputs = {
   vpc_id =  dependency.platform.outputs.vpc_id
   subnet_id=  dependency.platform.outputs.public_subnets[0]
   default_security_group_id= dependency.platform.outputs.default_security_group_id
+  ssh_allowed_cidrs = [get_env("BASTION_SSH_CIDR")]
 }

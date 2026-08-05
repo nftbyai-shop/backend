@@ -32,7 +32,7 @@ resource "aws_ecs_task_definition" "generate_nft" {
         { name = "COLLECTION_ID", value = var.COLLECTION_ID },
         { name = "GPT_MODEL_1", value = var.GPT_MODEL_1 },
         { name = "IMAGE_GEN_MODEL", value = "gpt-image-1" },
-        { name = "NFT_RECIPIENT", value = "email:owner@example.com:polygon" },
+        { name = "NFT_RECIPIENT", value = var.default_nft_owner },
         { name = "PRICE_IN_CENTS", value = var.PRICE_IN_CENTS },
         { name = "S3_BUCKET", value = var.nfts_s3_bucket_name },
         { name = "LOG_LEVEL", value = "DEBUG" },

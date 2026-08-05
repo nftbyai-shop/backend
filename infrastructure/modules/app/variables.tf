@@ -56,9 +56,18 @@ variable "PRICE_IN_CENTS" {
 }
 
 variable "default_nft_owner" {
-  description = "Default NFT owner identifier (scheme:user:chain)"
+  description = "Identifier that holds newly minted NFTs until sale (scheme:user:chain)"
   type        = string
-  default     = "email:owner@example.com:polygon"
+}
+
+variable "smtp_user" {
+  description = "Mailbox used as the envelope sender for operational mail"
+  type        = string
+}
+
+variable "report_to_email" {
+  description = "Destination for fulfillment failure alerts"
+  type        = string
 }
 variable "NFTBYAI_WALLET_ADDRESS" {
 }
@@ -73,8 +82,7 @@ variable "nft_image_storage_url" {
 }
 
 variable "elastic_load_balancer_certificate_arn" {
-  type    = string
-  default = "arn:aws:acm:us-east-1:111111111111:certificate/01cec85c-1454-47a2-995f-f50db290a47f"
+  type = string
 }
 
 

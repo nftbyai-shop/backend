@@ -354,7 +354,7 @@ stripe listen --forward-to localhost:8000/webhooks/stripe/
 
 ## Deployment
 
-All deployment runs through GitHub Actions with OIDC — no static AWS credentials anywhere.
+Deployment runs through GitHub Actions, authenticating to AWS by OIDC.
 
 | Workflow | Purpose |
 |---|---|
@@ -364,14 +364,41 @@ All deployment runs through GitHub Actions with OIDC — no static AWS credentia
 | `deploy-app` | Apply the ECS / ALB / scheduler layer |
 | `create_rds_users` | Bootstrap the `rds_iam` application role |
 
+### Required configuration
+
+Account identifiers, operator addresses, and network allowlists are deliberately kept out of version control, so a fork configures its own.
+
+**GitHub Actions repository variables** (Settings → Secrets and variables → Actions → Variables):
+
+| Variable | Value |
+|---|---|
+| `AWS_STAGING_ROLE_ARN` | IAM role ARN the staging workflows assume |
+| `AWS_PRODUCTION_ROLE_ARN` | IAM role ARN the production workflows assume |
+
+Both roles' trust policies should pin `token.actions.githubusercontent.com:sub` to this repository, so no other repo can assume them.
+
+**Environment variables**, required when running Terragrunt:
+
+| Variable | Value |
+|---|---|
+| `BASTION_SSH_CIDR` | CIDR permitted to SSH the bastion, e.g. `198.51.100.7/32` |
+| `NFT_OWNER_IDENTIFIER` | Holder of unsold NFTs, e.g. `email:you@example.com:polygon` |
+| `SMTP_USER_EMAIL` | Envelope sender for operational mail |
+| `REPORT_TO_EMAIL` | Destination for fulfillment failure alerts |
+
 Applying infrastructure directly:
 
 ```bash
+export BASTION_SSH_CIDR="$(curl -s https://checkip.amazonaws.com)/32"
+export NFT_OWNER_IDENTIFIER="email:you@example.com:polygon"
+export SMTP_USER_EMAIL="ops@example.com"
+export REPORT_TO_EMAIL="alerts@example.com"
+
 cd infrastructure/production/platform && terragrunt apply
 cd ../app                             && terragrunt apply
 ```
 
-Terragrunt resolves `platform → app` ordering from the declared dependencies.
+Terragrunt resolves `platform → app` ordering from the declared dependencies. Unset variables fail the plan rather than falling back to a default.
 
 ---
 

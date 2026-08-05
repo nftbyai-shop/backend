@@ -21,7 +21,7 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::111111111111:role/terraform-bootstrap-role # <-- YOUR IAM ROLE ARN
+          role-to-assume: ${{ vars.AWS_STAGING_ROLE_ARN }}
           aws-region: us-east-1 # or your region
 
       - name: Login to Amazon ECR

@@ -39,10 +39,12 @@ inputs = {
   FAILED_PURCHASE_URL      = "http://www.nftbyai.shop"
 
   GPT_MODEL_1 = "gpt-4.1-mini"
-  default_nft_owner                = "email:owner@example.com:polygon"
+  default_nft_owner                = get_env("NFT_OWNER_IDENTIFIER")
+  smtp_user                        = get_env("SMTP_USER_EMAIL")
+  report_to_email                  = get_env("REPORT_TO_EMAIL")
   nft_image_storage_url            = "https://nfts-${local.envs.locals.account_id}.s3.us-east-1.amazonaws.com"
   COLLECTION_ID = "e401f5a1-3e44-4fd6-9f39-67f5ffea4622"
-  elastic_load_balancer_certificate_arn = "arn:aws:acm:us-east-1:222222222222:certificate/f01b460c-b514-4900-ad1b-4ce1f281fdea"
+  elastic_load_balancer_certificate_arn = "arn:aws:acm:us-east-1:${local.envs.locals.account_id}:certificate/f01b460c-b514-4900-ad1b-4ce1f281fdea"
   
   NFTBYAI_WALLET_ADDRESS = "0xe3728939D95C6D68b4a58C085fd292BdbA5a11Cb"
   PRICE_IN_CENTS = 500

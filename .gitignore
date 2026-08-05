@@ -19,4 +19,13 @@ venv
 .terraform/
 .terraform*
 
-.terragrunt-cache 
+.terragrunt-cache
+
+# Terraform state (never commit — may contain resource metadata and secrets)
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+
+# Local scratch directories
+temp/

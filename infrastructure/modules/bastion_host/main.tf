@@ -18,11 +18,11 @@ resource "aws_security_group" "bastion_sg" {
   description = "Allow SSH inbound traffic"
   vpc_id      = var.vpc_id
   ingress {
-    description = "SSH from anywhere (not recommended for production)"
+    description = "SSH from operator-supplied CIDRs only"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["198.51.100.7/32"]
+    cidr_blocks = var.ssh_allowed_cidrs
   }
 
   egress {
