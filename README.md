@@ -1,6 +1,6 @@
 # NFTbyAI — Backend & Infrastructure
 
-**An autonomous, self-stocking NFT storefront.** A scheduled AI pipeline invents original artwork, mints it on-chain, and lists it for sale — with no human in the loop. When a customer pays, a second pipeline provisions them a wallet and transfers the token to it, exactly once, even under retries and partial failures.
+**An autonomous, self-stocking NFT storefront.** A scheduled AI pipeline invents original artwork, mints it on-chain, and lists it for sale — with no human in the loop. When a customer pays, a second pipeline provisions them a wallet and submits a transfer of the purchased token through Crossmint.
 
 <p>
   <img alt="Python" src="https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white">
@@ -19,7 +19,7 @@
 
 - [What it actually does](#what-it-actually-does)
 - [Architecture](#architecture)
-- [The hard part: exactly-once fulfillment](#the-hard-part-exactly-once-fulfillment)
+- [Payment fulfillment](#payment-fulfillment)
 - [Engineering highlights](#engineering-highlights)
 - [Repository layout](#repository-layout)
 - [Infrastructure](#infrastructure)
@@ -51,7 +51,7 @@ The storefront restocks itself. Cost per unit is bounded and known; the schedule
 
 A customer authenticates through Auth0, hits `POST /api/create-checkout-session`, and is handed a Stripe Checkout URL. On payment, Stripe calls a signature-verified webhook, and the backend:
 
-1. Claims the fulfillment (see [below](#the-hard-part-exactly-once-fulfillment)).
+1. Claims the fulfillment (see [below](#payment-fulfillment)).
 2. Resolves the Stripe product back to the artwork row and marks it unavailable.
 3. Creates — or idempotently re-fetches — an EVM smart wallet for the buyer via Crossmint, linked to their email.
 4. **Hand-encodes an ERC-721 `transferFrom` call**: derives the 4-byte selector from the function signature, ABI-encodes `(address,address,uint256)`, concatenates, and submits the raw calldata as a Crossmint transaction.
@@ -116,30 +116,15 @@ The two ECS workloads share one cluster and one database but have **separate IAM
 
 ---
 
-## The hard part: exactly-once fulfillment
+## Payment fulfillment
 
-Stripe webhooks are *at-least-once*. They retry on timeout, on 5xx, and on network blips. Fulfillment here means **minting money-equivalent value onto a blockchain** — doing it twice means transferring an asset you no longer own, or transferring two.
+After a paid Checkout Session is received and its webhook signature verified, the backend creates the buyer's wallet and submits a transfer of the existing NFT through Crossmint. Minting happens earlier, in the supply pipeline.
 
-The solution is a database primary key used as a distributed lock:
+[Stripe can deliver the same webhook more than once](https://docs.stripe.com/webhooks#handle-duplicate-events). Before starting fulfillment, the handler inserts the Checkout Session ID into `checkout_fulfillments`. That ID is the primary key, so PostgreSQL rejects another claim for the same session. The wallet and transfer requests also send the session ID as an `x-idempotency-key` header.
 
-```python
-async with session_maker() as db_session:
-    db_session.add(CheckoutFulfillment(session_id=session_id))
-    try:
-        await db_session.commit()
-    except IntegrityError:
-        # Another delivery of this same event already claimed it. Stop.
-        return None
-```
+The claim is committed before the external calls. If processing fails afterward, it remains in the database and prevents subsequent deliveries from resuming the order. The current implementation has no automatic recovery for these incomplete attempts and does not wait for on-chain confirmation before recording the new owner and sending the receipt. It does not guarantee exactly-once fulfillment.
 
-The Stripe `session_id` *is* the primary key of `checkout_fulfillments`. The first webhook delivery inserts and proceeds; every concurrent or subsequent delivery hits a uniqueness violation and exits cleanly. No advisory locks, no Redis, no race window — the guarantee is enforced by Postgres itself, in a single round trip.
-
-Layered on top of that:
-
-- **Signature verification first.** The raw request body is verified against the Stripe signing secret before anything is parsed, in a worker thread so the event loop isn't blocked by the HMAC.
-- **Idempotency keys downstream.** Both the wallet-creation and NFT-transfer calls to Crossmint carry `x-idempotency-key: {session_id}`, so even a retry that somehow got past the claim can't double-execute at the provider.
-- **An availability invariant.** If fulfillment ever reaches an artwork already marked sold, it raises loudly rather than transferring — the code treats that as a critical, alert-worthy inconsistency.
-- **The webhook is a separate ASGI app.** It's mounted as a sub-application specifically so the CORS middleware does *not* apply to it — browser origin rules have no business governing a server-to-server callback.
+The sequence below shows the normal flow:
 
 ```mermaid
 sequenceDiagram
@@ -159,7 +144,7 @@ sequenceDiagram
     S->>API: webhook checkout.session.completed
     API->>API: verify HMAC signature
     API->>DB: INSERT session_id (PK claim)
-    Note over API,DB: duplicate delivery → IntegrityError → exit
+    Note over API,DB: duplicate session ID → insert rejected
     API->>DB: mark artwork unavailable
     API->>X: create/fetch buyer wallet (idempotent)
     API->>X: submit encoded transferFrom calldata
